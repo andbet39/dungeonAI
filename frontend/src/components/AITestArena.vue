@@ -124,8 +124,6 @@
               <template #body="{ data }">
                 <Button icon="pi pi-chart-line" severity="info" size="small" text
                   @click="showEvolution(data.name)" v-tooltip="'View evolution history'" />
-                <Button icon="pi pi-refresh" severity="danger" size="small" text
-                  @click="resetSpecies(data.name)" v-tooltip="'Reset Q-table'" />
               </template>
             </Column>
           </DataTable>
@@ -750,12 +748,6 @@ async function refreshAll() {
   } finally {
     loading.value = false
   }
-}
-
-async function resetSpecies(name) {
-  if (!confirm(`Reset Q-table for ${name}?`)) return
-  await fetch(`${API_BASE}/ai/reset-species/${name}`, { method: 'POST' })
-  await fetchSpecies()
 }
 
 // Sandbox methods

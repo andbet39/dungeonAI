@@ -1,0 +1,123 @@
+{
+  "monster_type": "rat_swarm",
+  "schema_version": 3,
+  "history": [
+    {
+      "timestamp": "2025-12-02T14:09:13.941241",
+      "generation": 0,
+      "reward": 3.0,
+      "state_index": 6118,
+      "action": "ATTACK_AGGRESSIVE",
+      "q_value_before": 0.0,
+      "q_value_after": 0.15000000596046448
+    },
+    {
+      "timestamp": "2025-12-02T14:09:19.088138",
+      "generation": 0,
+      "reward": -1.0,
+      "state_index": 6118,
+      "action": "PATROL_WAYPOINT",
+      "q_value_before": 0.0,
+      "q_value_after": -0.04325000196695328
+    },
+    {
+      "timestamp": "2025-12-02T14:09:25.681063",
+      "generation": 0,
+      "reward": 5.0,
+      "state_index": 6118,
+      "action": "ATTACK_AGGRESSIVE",
+      "q_value_before": 0.15000000596046448,
+      "q_value_after": 0.3992500305175781
+    },
+    {
+      "timestamp": "2025-12-02T14:09:27.731569",
+      "generation": 0,
+      "reward": -6.0,
+      "state_index": 6118,
+      "action": "ATTACK_AGGRESSIVE",
+      "q_value_before": 0.3992500305175781,
+      "q_value_after": 0.09725376963615417
+    },
+    {
+      "timestamp": "2025-12-02T14:09:27.786254",
+      "generation": 0,
+      "reward": 1.0,
+      "state_index": 6118,
+      "action": "ATTACK_AGGRESSIVE",
+      "q_value_before": 0.09725376963615417,
+      "q_value_after": 0.1467674970626831
+    },
+    {
+      "timestamp": "2025-12-02T14:09:29.420009",
+      "generation": 0,
+      "reward": -3.0,
+      "state_index": 6118,
+      "action": "ATTACK_AGGRESSIVE",
+      "q_value_before": 0.1467674970626831,
+      "q_value_after": -0.010570883750915527
+    },
+    {
+      "timestamp": "2025-12-02T14:09:31.200042",
+      "generation": 0,
+      "reward": -2.0,
+      "state_index": 3526,
+      "action": "ATTACK_AGGRESSIVE",
+      "q_value_before": 0.0,
+      "q_value_after": -0.10000000149011612
+    },
+    {
+      "timestamp": "2025-12-02T14:09:32.780850",
+      "generation": 0,
+      "reward": -3.0,
+      "state_index": 3526,
+      "action": "ATTACK_DEFENSIVE",
+      "q_value_before": 0.0,
+      "q_value_after": -0.15000000596046448
+    },
+    {
+      "timestamp": "2025-12-02T14:09:41.362387",
+      "generation": 0,
+      "reward": -2.0,
+      "state_index": 3526,
+      "action": "DEFEND",
+      "q_value_before": 0.0,
+      "q_value_after": -0.10000000149011612
+    },
+    {
+      "timestamp": "2025-12-02T14:09:41.413454",
+      "generation": 0,
+      "reward": 5.0,
+      "state_index": 934,
+      "action": "ATTACK_AGGRESSIVE",
+      "q_value_before": 0.0,
+      "q_value_after": 0.25
+    },
+    {
+      "timestamp": "2025-12-02T14:09:43.952665",
+      "generation": 0,
+      "reward": -4.0,
+      "state_index": 934,
+      "action": "ATTACK_AGGRESSIVE",
+      "q_value_before": 0.25,
+      "q_value_after": 0.04874999821186066
+    },
+    {
+      "timestamp": "2025-12-02T14:09:45.780958",
+      "generation": 0,
+      "reward": -3.0,
+      "state_index": 934,
+      "action": "MOVE_AWAY_FROM_THREAT",
+      "q_value_before": 0.0,
+      "q_value_after": -0.14780625700950623
+    },
+    {
+      "timestamp": "2025-12-02T14:09:45.826896",
+      "generation": 0,
+      "reward": -100.0,
+      "state_index": 934,
+      "action": "MOVE_AWAY_FROM_THREAT",
+      "q_value_before": -0.14780625700950623,
+      "q_value_after": -5.1382222175598145
+    }
+  ]
+}

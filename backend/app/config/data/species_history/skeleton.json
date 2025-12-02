@@ -28,6 +28,87 @@
       "action": "ATTACK_AGGRESSIVE",
       "q_value_before": 0.0,
       "q_value_after": -0.09000000357627869
+    },
+    {
+      "timestamp": "2025-12-02T14:09:56.970493",
+      "generation": 0,
+      "reward": 3.0,
+      "state_index": 5956,
+      "action": "ATTACK_AGGRESSIVE",
+      "q_value_before": 0.0,
+      "q_value_after": 0.27000001072883606
+    },
+    {
+      "timestamp": "2025-12-02T14:09:59.776492",
+      "generation": 0,
+      "reward": -5.0,
+      "state_index": 5956,
+      "action": "ATTACK_AGGRESSIVE",
+      "q_value_before": 0.27000001072883606,
+      "q_value_after": -0.20430001616477966
+    },
+    {
+      "timestamp": "2025-12-02T14:10:01.593869",
+      "generation": 0,
+      "reward": -1.0,
+      "state_index": 3364,
+      "action": "ATTACK_AGGRESSIVE",
+      "q_value_before": 0.0,
+      "q_value_after": -0.09000000357627869
+    },
+    {
+      "timestamp": "2025-12-02T14:10:07.364085",
+      "generation": 0,
+      "reward": 1.0,
+      "state_index": 3364,
+      "action": "AMBUSH",
+      "q_value_before": 0.0,
+      "q_value_after": 0.09000000357627869
+    },
+    {
+      "timestamp": "2025-12-02T14:10:10.112000",
+      "generation": 0,
+      "reward": -4.0,
+      "state_index": 3364,
+      "action": "AMBUSH",
+      "q_value_before": 0.09000000357627869,
+      "q_value_after": -0.27810001373291016
+    },
+    {
+      "timestamp": "2025-12-02T14:10:10.161104",
+      "generation": 0,
+      "reward": 4.0,
+      "state_index": 772,
+      "action": "PATROL",
+      "q_value_before": 0.0,
+      "q_value_after": 0.36000001430511475
+    },
+    {
+      "timestamp": "2025-12-02T14:10:10.192520",
+      "generation": 0,
+      "reward": 2.0,
+      "state_index": 772,
+      "action": "PATROL",
+      "q_value_before": 0.36000001430511475,
+      "q_value_after": 0.5390280485153198
+    },
+    {
+      "timestamp": "2025-12-02T14:10:12.857957",
+      "generation": 0,
+      "reward": -3.0,
+      "state_index": 772,
+      "action": "PATROL",
+      "q_value_before": 0.5390280485153198,
+      "q_value_after": 0.26757264137268066
+    },
+    {
+      "timestamp": "2025-12-02T14:10:12.908107",
+      "generation": 0,
+      "reward": -100.0,
+      "state_index": 772,
+      "action": "PATROL",
+      "q_value_before": 0.26757264137268066,
+      "q_value_after": -8.733150482177734
     }
   ]
 }
