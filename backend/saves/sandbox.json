@@ -1078,14 +1078,14 @@
   "monsters": {
     "m_b2e076ec": {
       "monster_type": "goblin",
-      "x": 6,
-      "y": 11,
+      "x": 4,
+      "y": 5,
       "room_id": "room_1",
       "hp": 7
     },
     "m_f9e30bc0": {
       "monster_type": "goblin",
-      "x": 3,
+      "x": 2,
       "y": 14,
       "room_id": "room_1",
       "hp": 7
@@ -1098,7 +1098,7 @@
     "max_hp": 20,
     "ac": 14
   },
-  "tick": 6055,
+  "tick": 6145,
   "speed_ms": 200,
   "combat_enabled": true
 }

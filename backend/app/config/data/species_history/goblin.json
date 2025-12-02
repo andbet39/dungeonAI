@@ -721,6 +721,222 @@
       "action": "CALL_ALLIES",
       "q_value_before": -0.30934274196624756,
       "q_value_after": -12.244942665100098
+    },
+    {
+      "timestamp": "2025-12-02T14:31:11.325196",
+      "generation": 1,
+      "reward": 0.5,
+      "state_index": 6064,
+      "action": "CALL_ALLIES",
+      "q_value_before": 1.4587664604187012,
+      "q_value_after": 1.5100138187408447
+    },
+    {
+      "timestamp": "2025-12-02T14:31:11.879929",
+      "generation": 1,
+      "reward": 0.5,
+      "state_index": 6064,
+      "action": "CALL_ALLIES",
+      "q_value_before": 1.5100138187408447,
+      "q_value_after": 1.5609537363052368
+    },
+    {
+      "timestamp": "2025-12-02T14:31:12.453098",
+      "generation": 1,
+      "reward": 0.5,
+      "state_index": 6064,
+      "action": "CALL_ALLIES",
+      "q_value_before": 1.5609537363052368,
+      "q_value_after": 1.6115880012512207
+    },
+    {
+      "timestamp": "2025-12-02T14:31:12.997666",
+      "generation": 1,
+      "reward": 0.5,
+      "state_index": 6064,
+      "action": "CALL_ALLIES",
+      "q_value_before": 1.6115880012512207,
+      "q_value_after": 1.6619185209274292
+    },
+    {
+      "timestamp": "2025-12-02T14:31:13.542805",
+      "generation": 1,
+      "reward": 0.5,
+      "state_index": 6064,
+      "action": "CALL_ALLIES",
+      "q_value_before": 1.6619185209274292,
+      "q_value_after": 1.711946964263916
+    },
+    {
+      "timestamp": "2025-12-02T14:31:14.079187",
+      "generation": 1,
+      "reward": 0.5,
+      "state_index": 6064,
+      "action": "CALL_ALLIES",
+      "q_value_before": 1.711946964263916,
+      "q_value_after": 1.761675238609314
+    },
+    {
+      "timestamp": "2025-12-02T14:31:14.622260",
+      "generation": 1,
+      "reward": -6.0,
+      "state_index": 6064,
+      "action": "FLEE",
+      "q_value_before": 0.0,
+      "q_value_after": -0.5191689729690552
+    },
+    {
+      "timestamp": "2025-12-02T14:31:14.669644",
+      "generation": 1,
+      "reward": 2.0,
+      "state_index": 6064,
+      "action": "FLEE",
+      "q_value_before": -0.5191689729690552,
+      "q_value_after": -0.016037702560424805
+    },
+    {
+      "timestamp": "2025-12-02T14:31:15.203830",
+      "generation": 1,
+      "reward": -1.0,
+      "state_index": 880,
+      "action": "ATTACK_AGGRESSIVE",
+      "q_value_before": 0.23927998542785645,
+      "q_value_after": 0.11784429848194122
+    },
+    {
+      "timestamp": "2025-12-02T14:31:15.252970",
+      "generation": 1,
+      "reward": 1.0,
+      "state_index": 880,
+      "action": "ATTACK_AGGRESSIVE",
+      "q_value_before": 0.11784429848194122,
+      "q_value_after": 0.23713722825050354
+    },
+    {
+      "timestamp": "2025-12-02T14:31:15.790181",
+      "generation": 1,
+      "reward": -1.0,
+      "state_index": 880,
+      "action": "ATTACK_AGGRESSIVE",
+      "q_value_before": 0.23713722825050354,
+      "q_value_after": 0.11571440100669861
+    },
+    {
+      "timestamp": "2025-12-02T14:31:15.839808",
+      "generation": 1,
+      "reward": 1.0,
+      "state_index": 880,
+      "action": "ATTACK_AGGRESSIVE",
+      "q_value_before": 0.11571440100669861,
+      "q_value_after": 0.23502011597156525
+    },
+    {
+      "timestamp": "2025-12-02T14:31:16.379473",
+      "generation": 1,
+      "reward": -1.0,
+      "state_index": 880,
+      "action": "ATTACK_AGGRESSIVE",
+      "q_value_before": 0.23502011597156525,
+      "q_value_after": 0.11360999196767807
+    },
+    {
+      "timestamp": "2025-12-02T14:31:16.429388",
+      "generation": 1,
+      "reward": -100.0,
+      "state_index": 880,
+      "action": "ATTACK_AGGRESSIVE",
+      "q_value_before": 0.11360999196767807,
+      "q_value_after": -11.887070655822754
+    },
+    {
+      "timestamp": "2025-12-02T14:31:17.472564",
+      "generation": 1,
+      "reward": 0.5,
+      "state_index": 6064,
+      "action": "CALL_ALLIES",
+      "q_value_before": 1.761675238609314,
+      "q_value_after": 1.8111051321029663
+    },
+    {
+      "timestamp": "2025-12-02T14:31:18.514914",
+      "generation": 1,
+      "reward": 0.5,
+      "state_index": 6064,
+      "action": "CALL_ALLIES",
+      "q_value_before": 1.8111051321029663,
+      "q_value_after": 1.8602385520935059
+    },
+    {
+      "timestamp": "2025-12-02T14:31:19.066625",
+      "generation": 1,
+      "reward": 0.5,
+      "state_index": 6064,
+      "action": "CALL_ALLIES",
+      "q_value_before": 1.8602385520935059,
+      "q_value_after": 1.9090771675109863
+    },
+    {
+      "timestamp": "2025-12-02T14:31:19.614142",
+      "generation": 1,
+      "reward": 0.5,
+      "state_index": 6064,
+      "action": "CALL_ALLIES",
+      "q_value_before": 1.9090771675109863,
+      "q_value_after": 1.957622766494751
+    },
+    {
+      "timestamp": "2025-12-02T14:31:20.164641",
+      "generation": 1,
+      "reward": 0.5,
+      "state_index": 6064,
+      "action": "CALL_ALLIES",
+      "q_value_before": 1.957622766494751,
+      "q_value_after": 2.0058770179748535
+    },
+    {
+      "timestamp": "2025-12-02T14:31:20.720288",
+      "generation": 1,
+      "reward": 0.5,
+      "state_index": 6064,
+      "action": "CALL_ALLIES",
+      "q_value_before": 2.0058770179748535,
+      "q_value_after": 2.0538418292999268
+    },
+    {
+      "timestamp": "2025-12-02T14:31:21.266249",
+      "generation": 1,
+      "reward": 0.5,
+      "state_index": 6064,
+      "action": "CALL_ALLIES",
+      "q_value_before": 2.0538418292999268,
+      "q_value_after": 2.1015188694000244
+    },
+    {
+      "timestamp": "2025-12-02T14:31:21.803432",
+      "generation": 1,
+      "reward": 0.5,
+      "state_index": 6064,
+      "action": "CALL_ALLIES",
+      "q_value_before": 2.1015188694000244,
+      "q_value_after": 2.1489098072052
+    },
+    {
+      "timestamp": "2025-12-02T14:31:22.358032",
+      "generation": 1,
+      "reward": 0.5,
+      "state_index": 6064,
+      "action": "CALL_ALLIES",
+      "q_value_before": 2.1489098072052,
+      "q_value_after": 2.196016311645508
+    },
+    {
+      "timestamp": "2025-12-02T14:31:22.905717",
+      "generation": 1,
+      "reward": -100.0,
+      "state_index": 6064,
+      "action": "DEFEND",
+      "q_value_before": 0.253366619348526,
+      "q_value_after": -11.526691436767578
     }
   ]
 }

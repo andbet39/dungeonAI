@@ -1,0 +1,21 @@
+# Render.com configuration
+# See: https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: dungeonai
+    runtime: python
+    buildCommand: ./build.sh
+    startCommand: cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11"
+      - key: NODE_VERSION
+        value: "20"
+      # Add your environment variables here
+      # - key: AZURE_OPENAI_API_KEY
+      #   sync: false  # Set in dashboard
+      # - key: AZURE_OPENAI_ENDPOINT
+      #   sync: false
+      # - key: AZURE_OPENAI_DEPLOYMENT
+      #   value: gpt-4
