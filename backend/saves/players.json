@@ -1,0 +1,44 @@
+{
+  "version": "1.0",
+  "saved_at": "2025-12-02T09:38:26.492596",
+  "registry": {
+    "players": {
+      "302e1bc4-5743-4b66-b3f8-316ee0ff31cf": {
+        "token": "302e1bc4-5743-4b66-b3f8-316ee0ff31cf",
+        "display_name": "Andrea",
+        "created_at": "2025-12-01T22:29:06.000264",
+        "last_seen": "2025-12-02T09:35:32.082376",
+        "current_game_id": "f5220969",
+        "current_player_id": "5490c2be",
+        "total_games_played": 13,
+        "nickname": "The Undead's End"
+      }
+    },
+    "stats": {
+      "302e1bc4-5743-4b66-b3f8-316ee0ff31cf": {
+        "token": "302e1bc4-5743-4b66-b3f8-316ee0ff31cf",
+        "monsters_killed": 6,
+        "rooms_visited": 6,
+        "damage_dealt": 143,
+        "damage_taken": 227,
+        "deaths": 2,
+        "games_completed": 0,
+        "critical_hits": 3,
+        "items_collected": 0,
+        "experience_earned": 1325,
+        "gold_earned": 0,
+        "kills_by_type": {
+          "zombie": 1,
+          "goblin": 2,
+          "bandit": 1,
+          "skeleton": 1,
+          "ghost": 1
+        },
+        "nickname": "The Undead's End",
+        "kills_at_last_nickname": 5,
+        "first_game_at": "2025-12-01T22:29:10.027432",
+        "last_updated": "2025-12-02T09:36:16.871888"
+      }
+    }
+  }
+}

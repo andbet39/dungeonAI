@@ -1,0 +1,33 @@
+{
+  "monster_type": "skeleton",
+  "schema_version": 3,
+  "history": [
+    {
+      "timestamp": "2025-12-02T09:36:10.183876",
+      "generation": 0,
+      "reward": 4.0,
+      "state_index": 5902,
+      "action": "ATTACK_AGGRESSIVE",
+      "q_value_before": 0.0,
+      "q_value_after": 0.36000001430511475
+    },
+    {
+      "timestamp": "2025-12-02T09:36:15.071207",
+      "generation": 0,
+      "reward": -5.0,
+      "state_index": 5902,
+      "action": "ATTACK_AGGRESSIVE",
+      "q_value_before": 0.36000001430511475,
+      "q_value_after": -0.12240001559257507
+    },
+    {
+      "timestamp": "2025-12-02T09:36:16.834657",
+      "generation": 0,
+      "reward": -1.0,
+      "state_index": 3310,
+      "action": "ATTACK_AGGRESSIVE",
+      "q_value_before": 0.0,
+      "q_value_after": -0.09000000357627869
+    }
+  ]
+}

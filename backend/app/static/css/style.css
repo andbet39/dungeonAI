@@ -1,0 +1,35 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #1a1a1a;
+    color: #f0f0f0;
+    font-family: monospace;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#game-container {
+    text-align: center;
+}
+
+#game-container h1 {
+    margin-bottom: 20px;
+    color: #ffd700;
+    font-size: 2rem;
+}
+
+#game {
+    display: inline-block;
+    border: 2px solid #444;
+    background-color: #000;
+}
+
+#game canvas {
+    display: block;
+}

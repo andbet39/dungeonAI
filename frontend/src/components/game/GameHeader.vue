@@ -1,0 +1,117 @@
+<template>
+  <header class="header">
+    <div class="header-left">
+      <router-link to="/lobby" class="back-btn">← Lobby</router-link>
+      <h1>🗡️ {{ gameName }}</h1>
+    </div>
+    <div class="header-right">
+      <div class="world-position" v-if="myPlayer">
+        📍 World: ({{ myPlayer.x }}, {{ myPlayer.y }})
+      </div>
+      <div class="connection-status" :class="{ connected: isConnected, disconnected: !isConnected }">
+        {{ isConnected ? '● Connected' : '○ Disconnected' }}
+      </div>
+    </div>
+  </header>
+</template>
+
+<script>
+import { computed } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useGameStore } from '../../stores/gameStore'
+import { usePlayerStore } from '../../stores/playerStore'
+import { useSocketStore } from '../../stores/socketStore'
+
+export default {
+  name: 'GameHeader',
+  setup() {
+    const gameStore = useGameStore()
+    const playerStore = usePlayerStore()
+    const socketStore = useSocketStore()
+
+    const { gameName } = storeToRefs(gameStore)
+    const { myPlayer } = storeToRefs(playerStore)
+    const { isConnected } = storeToRefs(socketStore)
+
+    return {
+      gameName,
+      myPlayer,
+      isConnected
+    }
+  }
+}
+</script>
+
+<style scoped>
+.header {
+  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+  padding: 0.5rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #444;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header h1 {
+  font-size: 1.3rem;
+  color: #ecf0f1;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.back-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ecf0f1;
+  border: 1px solid #555;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 0.8rem;
+  transition: all 0.2s ease;
+}
+
+.back-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: #3498db;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.world-position {
+  background: #1a1a1a;
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 0.75rem;
+  color: #3498db;
+  border: 1px solid #3498db;
+}
+
+.connection-status {
+  padding: 0.3rem 0.6rem;
+  border-radius: 15px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.connection-status.connected {
+  background: #27ae60;
+  color: white;
+}
+
+.connection-status.disconnected {
+  background: #c0392b;
+  color: white;
+}
+</style>
