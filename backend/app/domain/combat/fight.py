@@ -31,7 +31,7 @@ class Fight:
     status: FightStatus = FightStatus.PENDING
     started_at: float = 0.0
     turn_end_time: float = 0.0
-    turn_duration: int = 120  # 2 minutes per turn in seconds
+    turn_duration: int = 30  # 30 seconds per turn
     combat_log: list[dict] = field(default_factory=list)
     
     @classmethod
@@ -39,7 +39,7 @@ class Fight:
         cls,
         monster_id: str,
         initiator_player_id: str,
-        turn_duration: int = 120
+        turn_duration: int = 30
     ) -> "Fight":
         """Create a new fight encounter."""
         fight_id = str(uuid.uuid4())[:8]
@@ -194,7 +194,7 @@ class Fight:
             status=FightStatus(data.get("status", "active")),
             started_at=data.get("started_at", 0.0),
             turn_end_time=data.get("turn_end_time", 0.0),
-            turn_duration=data.get("turn_duration", 120),
+            turn_duration=data.get("turn_duration", 30),
             combat_log=data.get("combat_log", [])
         )
         return fight

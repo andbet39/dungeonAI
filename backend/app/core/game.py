@@ -827,7 +827,7 @@ class Game:
                     if pid in self.players:
                         self.players[pid].grant_fight_immunity()
                 await self._broadcast_fight_ended_to_players(fight_id, "defeat", fight.to_dict(), original_ids)
-                del self.active_fights[fight_id]
+                self.active_fights.pop(fight_id, None)
                 continue
             
             fight.advance_turn()
@@ -861,7 +861,7 @@ class Game:
                     if pid in self.players:
                         self.players[pid].grant_fight_immunity()
                 await self._broadcast_fight_ended_to_players(fight_id, "defeat", fight.to_dict(), original_ids)
-                del self.active_fights[fight_id]
+                self.active_fights.pop(fight_id, None)
             else:
                 monster = self.monsters.get(fight.monster_id)
                 if monster:
@@ -877,7 +877,7 @@ class Game:
                 return {"success": False, "error": "Already in fight"}
             
             monster = self.monsters[monster_id]
-            fight = Fight.create(monster_id=monster_id, initiator_player_id=player_id, turn_duration=120)
+            fight = Fight.create(monster_id=monster_id, initiator_player_id=player_id, turn_duration=30)
             self.active_fights[fight.id] = fight
             
             return {"success": True, "fight": fight.to_dict(), "monster": monster.to_dict(), "player_ids": fight.player_ids}
@@ -918,7 +918,7 @@ class Game:
                 self.players[player_id].grant_fight_immunity()
             
             if ended:
-                del self.active_fights[fight_id]
+                self.active_fights.pop(fight_id, None)
             
             return {"success": True, "fight_ended": ended, "fight": fight.to_dict() if not ended else None, "remaining_players": fight.player_ids if not ended else []}
 
@@ -980,8 +980,8 @@ class Game:
                 for pid in fight.player_ids:
                     if pid in self.players:
                         self.players[pid].grant_fight_immunity()
-                del self.monsters[monster.id]
-                del self.active_fights[fight_id]
+                self.monsters.pop(monster.id, None)
+                self.active_fights.pop(fight_id, None)
                 self._mark_dirty()
                 return {"success": True, "fight_ended": True, "result": "victory", "fight": fight.to_dict(), "xp_earned": xp_earned, "monster_type": monster.monster_type}
             
@@ -1008,7 +1008,7 @@ class Game:
                             self.players[pid].grant_fight_immunity()
                     fight_data = fight.to_dict()
                     fight_data["player_ids"] = original_ids
-                    del self.active_fights[fight_id]
+                    self.active_fights.pop(fight_id, None)
                     return {"success": True, "fight_ended": True, "result": "defeat", "fight": fight_data}
                 
                 fight.advance_turn()

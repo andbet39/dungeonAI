@@ -913,7 +913,7 @@ class GameManager:
         fight = Fight.create(
             monster_id=monster_id,
             initiator_player_id=player_id,
-            turn_duration=120
+            turn_duration=30
         )
         
         # Monster attacks first when it initiates
@@ -1092,7 +1092,7 @@ class GameManager:
             fight = Fight.create(
                 monster_id=monster_id,
                 initiator_player_id=player_id,
-                turn_duration=120  # 2 minutes
+                turn_duration=30  # 30 seconds
             )
             
             self.active_fights[fight.id] = fight
@@ -1582,7 +1582,7 @@ class GameManager:
             fight = Fight.create(
                 monster_id=monster_id,
                 initiator_player_id=target_player_id,
-                turn_duration=120
+                turn_duration=30
             )
             
             # Monster attacks first when it initiates
