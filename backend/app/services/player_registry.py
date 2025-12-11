@@ -102,7 +102,7 @@ class PlayerRegistry:
         registry_data = await storage_service.load_player_registry()
         if registry_data:
             self._players = {
-                token: PlayerProfile.from_dict(data)
+                token: PlayerProfile.from_dict({"token": token, **data})
                 for token, data in registry_data.get("players", {}).items()
             }
     

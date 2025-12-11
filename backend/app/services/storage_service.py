@@ -329,4 +329,18 @@ class StorageService:
 
 
 # Global storage service instance
-storage_service = StorageService()
+_storage_service_singleton = StorageService()
+
+
+class _StorageModuleProxy:
+    def __getattr__(self, name):
+        return getattr(_storage_service_singleton, name)
+
+
+# Module-level name used by `from . import storage_service`
+storage_service = _StorageModuleProxy()
+
+
+# Module-level __getattr__ for backwards compatibility if the module is imported directly
+def __getattr__(name):
+    return getattr(_storage_service_singleton, name)

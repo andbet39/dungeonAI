@@ -6,3 +6,6 @@ openai
 python-dotenv
 numpy
 pytest
+motor>=3.3.0
+pymongo>=4.5.0
+certifi

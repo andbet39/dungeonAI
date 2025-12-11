@@ -33,6 +33,8 @@ from ..domain.map.tiles import (
     TILE_WALL,
 )
 from ..services.monster_service import monster_service
+from ..db import mongodb_manager
+from datetime import datetime
 
 
 @dataclass
@@ -946,13 +948,34 @@ class SandboxManager:
         }
     
     def _save(self) -> None:
-        """Save sandbox state to disk."""
+        """Save sandbox state (sync wrapper)."""
         if not self.state:
             return
-        
+
+        # Try MongoDB first if available
+        if settings.mongodb.is_enabled and mongodb_manager.is_connected:
+            try:
+                loop = asyncio.get_event_loop()
+                if loop.is_running():
+                    asyncio.create_task(self._async_save())
+                    return
+                else:
+                    loop.run_until_complete(self._async_save())
+                    return
+            except Exception as e:
+                print(f"[SandboxManager] MongoDB save failed, falling back to JSON: {e}")
+
+        # Fallback to JSON
+        self._save_to_json()
+
+    def _save_to_json(self) -> None:
+        """Save sandbox state to JSON file."""
+        if not self.state:
+            return
+
         try:
             self.save_path.parent.mkdir(parents=True, exist_ok=True)
-            
+
             data = {
                 "tiles": self.state.tiles,
                 "width": self.state.width,
@@ -979,65 +1002,154 @@ class SandboxManager:
                 "speed_ms": self.state.speed_ms,
                 "combat_enabled": self.state.combat_enabled,
             }
-            
+
             with open(self.save_path, "w") as f:
                 json.dump(data, f, indent=2)
+            print("[SandboxManager] Saved sandbox state to JSON")
         except Exception as e:
-            print(f"[SandboxManager] Failed to save: {e}")
+            print(f"[SandboxManager] Failed to save to JSON: {e}")
+
+    async def _async_save(self) -> None:
+        """Save sandbox state to MongoDB."""
+        if not self.state:
+            return
+
+        try:
+            data = {
+                "singleton": "sandbox",
+                "tiles": self.state.tiles,
+                "width": self.state.width,
+                "height": self.state.height,
+                "rooms": self.state.rooms,
+                "monsters": {
+                    mid: {
+                        "monster_type": m.monster_type,
+                        "x": m.x,
+                        "y": m.y,
+                        "room_id": m.room_id,
+                        "hp": m.stats.hp,
+                    }
+                    for mid, m in self.state.monsters.items()
+                },
+                "threat": {
+                    "x": self.state.threat.x,
+                    "y": self.state.threat.y,
+                    "hp": self.state.threat.hp,
+                    "max_hp": self.state.threat.max_hp,
+                    "ac": self.state.threat.ac,
+                } if self.state.threat else None,
+                "tick": self.state.tick,
+                "speed_ms": self.state.speed_ms,
+                "combat_enabled": self.state.combat_enabled,
+                "last_updated": datetime.now()
+            }
+
+            await mongodb_manager.db.sandbox.update_one(
+                {"singleton": "sandbox"},
+                {"$set": data},
+                upsert=True
+            )
+            print("[SandboxManager] Saved sandbox state to MongoDB")
+        except Exception as e:
+            print(f"[SandboxManager] Failed to save to MongoDB: {e}")
     
     def _load(self) -> None:
-        """Load sandbox state from disk."""
+        """Load sandbox state (sync wrapper)."""
+        # Try MongoDB first if available
+        if settings.mongodb.is_enabled and mongodb_manager.is_connected:
+            try:
+                loop = asyncio.get_event_loop()
+                if loop.is_running():
+                    asyncio.create_task(self._async_load())
+                    # Also try JSON as immediate fallback
+                    if self.save_path.exists():
+                        self._load_from_json()
+                    return
+                else:
+                    loop.run_until_complete(self._async_load())
+                    if self.state:  # Successfully loaded from MongoDB
+                        return
+            except Exception as e:
+                print(f"[SandboxManager] MongoDB load failed, falling back to JSON: {e}")
+
+        # Fallback to JSON
+        if self.save_path.exists():
+            self._load_from_json()
+
+    def _load_from_json(self) -> None:
+        """Load sandbox state from JSON file."""
         if not self.save_path.exists():
             return
-        
+
         try:
             with open(self.save_path, "r") as f:
                 data = json.load(f)
-            
-            # Reconstruct monsters
-            monsters = {}
-            for mid, mdata in data.get("monsters", {}).items():
-                monster = monster_service.create_monster(
-                    monster_type=mdata["monster_type"],
-                    x=mdata["x"],
-                    y=mdata["y"],
-                    room_id=mdata["room_id"]
-                )
-                if monster:
-                    monster.id = mid  # Restore original ID
-                    monster.stats.hp = mdata.get("hp", monster.stats.max_hp)
-                    monsters[mid] = monster
-            
-            # Reconstruct threat
-            threat = None
-            if data.get("threat"):
-                threat_data = data["threat"]
-                threat = SandboxThreat(
-                    x=threat_data["x"],
-                    y=threat_data["y"],
-                    hp=threat_data.get("hp", 20),
-                    max_hp=threat_data.get("max_hp", 20),
-                    ac=threat_data.get("ac", 14),
-                )
-            
-            self.state = SandboxState(
-                tiles=data["tiles"],
-                width=data["width"],
-                height=data["height"],
-                rooms=data["rooms"],
-                monsters=monsters,
-                threat=threat,
-                tick=data.get("tick", 0),
-                running=False,  # Never auto-start
-                speed_ms=data.get("speed_ms", 500),
-                decision_log=deque(maxlen=50),
-                combat_log=deque(maxlen=100),
-                combat_enabled=data.get("combat_enabled", True),
-            )
-            
-            print(f"[SandboxManager] Loaded sandbox state from {self.save_path}")
+
+            self._reconstruct_state_from_data(data)
+            print(f"[SandboxManager] Loaded sandbox state from JSON")
         except Exception as e:
-            print(f"[SandboxManager] Failed to load: {e}")
+            print(f"[SandboxManager] Failed to load from JSON: {e}")
+
+    async def _async_load(self) -> None:
+        """Load sandbox state from MongoDB."""
+        try:
+            doc = await mongodb_manager.db.sandbox.find_one({"singleton": "sandbox"})
+
+            if not doc:
+                return
+
+            # Remove MongoDB-specific fields
+            doc.pop("_id", None)
+            doc.pop("singleton", None)
+            doc.pop("last_updated", None)
+
+            self._reconstruct_state_from_data(doc)
+            print("[SandboxManager] Loaded sandbox state from MongoDB")
+        except Exception as e:
+            print(f"[SandboxManager] Failed to load from MongoDB: {e}")
+
+    def _reconstruct_state_from_data(self, data: dict) -> None:
+        """Reconstruct sandbox state from data dict (used by both JSON and MongoDB loaders)."""
+        # Reconstruct monsters
+        monsters = {}
+        for mid, mdata in data.get("monsters", {}).items():
+            monster = monster_service.create_monster(
+                monster_type=mdata["monster_type"],
+                x=mdata["x"],
+                y=mdata["y"],
+                room_id=mdata["room_id"]
+            )
+            if monster:
+                monster.id = mid  # Restore original ID
+                monster.stats.hp = mdata.get("hp", monster.stats.max_hp)
+                monsters[mid] = monster
+
+        # Reconstruct threat
+        threat = None
+        if data.get("threat"):
+            threat_data = data["threat"]
+            threat = SandboxThreat(
+                x=threat_data["x"],
+                y=threat_data["y"],
+                hp=threat_data.get("hp", 20),
+                max_hp=threat_data.get("max_hp", 20),
+                ac=threat_data.get("ac", 14),
+            )
+
+        self.state = SandboxState(
+            tiles=data["tiles"],
+            width=data["width"],
+            height=data["height"],
+            rooms=data["rooms"],
+            monsters=monsters,
+            threat=threat,
+            tick=data.get("tick", 0),
+            running=False,  # Never auto-start
+            speed_ms=data.get("speed_ms", 500),
+            decision_log=deque(maxlen=50),
+            combat_log=deque(maxlen=100),
+            combat_enabled=data.get("combat_enabled", True),
+        )
 
 
 # Global sandbox manager instance

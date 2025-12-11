@@ -1,45 +1,25 @@
 {
   "version": "1.0",
-  "saved_at": "2025-12-02T14:39:21.778060",
+  "saved_at": "2025-12-11T16:13:39.932244",
   "registry": {
-    "players": {
-      "302e1bc4-5743-4b66-b3f8-316ee0ff31cf": {
-        "token": "302e1bc4-5743-4b66-b3f8-316ee0ff31cf",
-        "display_name": "Andrea",
-        "created_at": "2025-12-01T22:29:06.000264",
-        "last_seen": "2025-12-02T14:32:10.976721",
-        "current_game_id": "1e03c454",
-        "current_player_id": "772af183",
-        "total_games_played": 16,
-        "nickname": "Bane of Goblinkind"
-      }
-    },
     "stats": {
-      "302e1bc4-5743-4b66-b3f8-316ee0ff31cf": {
-        "token": "302e1bc4-5743-4b66-b3f8-316ee0ff31cf",
-        "monsters_killed": 9,
-        "rooms_visited": 11,
-        "damage_dealt": 189,
-        "damage_taken": 275,
-        "deaths": 2,
+      "aa304705-04d0-4e11-a759-886e2186f39c": {
+        "token": "aa304705-04d0-4e11-a759-886e2186f39c",
+        "monsters_killed": 0,
+        "rooms_visited": 1,
+        "damage_dealt": 19,
+        "damage_taken": 21,
+        "deaths": 0,
         "games_completed": 0,
-        "critical_hits": 3,
+        "critical_hits": 0,
         "items_collected": 0,
-        "experience_earned": 1450,
+        "experience_earned": 0,
         "gold_earned": 0,
-        "kills_by_type": {
-          "zombie": 1,
-          "goblin": 2,
-          "bandit": 1,
-          "skeleton": 2,
-          "ghost": 1,
-          "rat_swarm": 1,
-          "dark_cultist": 1
-        },
-        "nickname": "Bane of Goblinkind",
-        "kills_at_last_nickname": 8,
-        "first_game_at": "2025-12-01T22:29:10.027432",
-        "last_updated": "2025-12-02T14:32:54.953964"
+        "kills_by_type": {},
+        "nickname": "",
+        "kills_at_last_nickname": 0,
+        "first_game_at": "2025-12-11T15:39:55.322345",
+        "last_updated": "2025-12-11T15:40:23.090993"
       }
     }
   }

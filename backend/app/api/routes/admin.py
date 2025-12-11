@@ -161,14 +161,14 @@ async def get_species_knowledge():
 async def get_species_history(species: str, limit: int = Query(100, ge=1, le=500)):
     """
     Get learning history for a species.
-    
+
     Returns recent Q-learning events for evolution visualization.
     Each entry contains timestamp, reward, state, action, and Q-value changes.
-    
+
     History is stored in separate files per species for efficiency.
     """
-    # Use limit parameter directly - get_history now handles it
-    history = monster_service.species_store.get_history(species, limit=limit)
+    # Use async method to properly load history from MongoDB
+    history = await monster_service.species_store.get_history_async(species, limit=limit)
     if not history:
         return {"species": species, "history": [], "total": 0}
     

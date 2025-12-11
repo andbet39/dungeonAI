@@ -267,7 +267,7 @@ class PlayerStatsTracker:
         registry_data = await storage_service.load_player_registry()
         if registry_data and "stats" in registry_data:
             self._stats = {
-                token: PlayerStats.from_dict(data)
+                token: PlayerStats.from_dict({"token": token, **data})
                 for token, data in registry_data.get("stats", {}).items()
             }
     

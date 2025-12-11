@@ -30,6 +30,8 @@ from ..domain.map import (
     TILE_DOOR_CLOSED, TILE_DOOR_OPEN, TILE_FLOOR,
     AStar, Direction, get_direction_to_target, is_in_corridor, find_nearest_corridor,
 )
+from ..db import mongodb_manager
+from .mongodb_species_store import MongoDBSpeciesKnowledgeStore
 
 
 @dataclass
@@ -56,45 +58,176 @@ class MonsterService:
     def __init__(self):
         if self._initialized:
             return
-        
+
         self.config_path = settings.config_data_dir
         self.monster_types: dict = {}
         self.spawn_rates: dict = {}
         self.ai_profiles: dict[str, MonsterAIProfile] = {}
-        self.species_store = SpeciesKnowledgeStore()
+        self.species_store = None  # Will be set later in initialize()
+
+        print("[MonsterService] Initializing MonsterService (deferred species store setup)")
+        
         self.monster_memories: dict[str, ThreatMemory] = {}
-        self._load_configs()
+        # Don't load configs yet - will be done in initialize()
         event_bus.subscribe_async(EventType.DAMAGE_DEALT, self._handle_damage_event)
         event_bus.subscribe_async(EventType.MONSTER_DIED, self._handle_monster_death)
         self._initialized = True
+
+    def initialize(self) -> None:
+        """Initialize the species store and load configurations."""
+        if self.species_store is not None:
+            return  # Already initialized
+
+        print(f"[MonsterService] Initializing species store - MongoDB enabled: {settings.mongodb.is_enabled}, connected: {mongodb_manager.is_connected}")
+        if settings.mongodb.is_enabled and mongodb_manager.is_connected:
+            self.species_store = MongoDBSpeciesKnowledgeStore()
+            print("[MonsterService] Using MongoDB species knowledge store")
+        else:
+            self.species_store = SpeciesKnowledgeStore()
+            print("[MonsterService] Using JSON species knowledge store")
+
+        self._load_configs()
+
+    def _ensure_initialized(self) -> None:
+        """Ensure the service is fully initialized."""
+        if self.species_store is None:
+            self.initialize()
+
+    def reinitialize_species_store(self) -> None:
+        """Reinitialize the species store based on current MongoDB connection status."""
+        print(f"[MonsterService] Reinitializing species store - MongoDB connected: {mongodb_manager.is_connected}")
+        if settings.mongodb.is_enabled and mongodb_manager.is_connected:
+            self.species_store = MongoDBSpeciesKnowledgeStore()
+            print("[MonsterService] Switched to MongoDB species knowledge store")
+        else:
+            self.species_store = SpeciesKnowledgeStore()
+            print("[MonsterService] Switched to JSON species knowledge store")
+        
+        # Reload spawn rates with the new store
+        self.spawn_rates = self._load_spawn_rates_sync()
     
     def _load_configs(self) -> None:
         """Load monster and spawn rate configurations."""
-        # Load monster types
+        # Load monster types - try MongoDB first, fallback to JSON
+        self.monster_types = self._load_monsters_sync()
+
+        # Load spawn rates - try MongoDB first, fallback to JSON
+        self.spawn_rates = self._load_spawn_rates_sync()
+        self._build_ai_profiles()
+
+    def _load_monsters_sync(self) -> dict:
+        """Load monster types configuration (synchronous)."""
+        # Try MongoDB first if available
+        if settings.mongodb.is_enabled and mongodb_manager.is_connected:
+            try:
+                import asyncio
+                loop = asyncio.get_event_loop()
+                if loop.is_running():
+                    # In async context, schedule task
+                    asyncio.create_task(self._async_load_monsters_to_cache())
+                    # Return from JSON for now
+                    return self._load_monsters_from_json()
+                else:
+                    # Can use run_until_complete
+                    return loop.run_until_complete(self._async_load_monsters())
+            except Exception as e:
+                print(f"[MonsterService] Error loading monsters from MongoDB: {e}")
+
+        # Fallback to JSON
+        return self._load_monsters_from_json()
+
+    async def _async_load_monsters(self) -> dict:
+        """Load monster types from MongoDB (async)."""
+        try:
+            doc = await mongodb_manager.db.monsters.find_one({"config_version": "1.0"})
+            if doc and "monsters" in doc:
+                monsters = doc["monsters"]
+                print(f"[MonsterService] ✓ Loaded {len(monsters)} monster types from MongoDB")
+                return monsters
+        except Exception as e:
+            print(f"[MonsterService] Error loading monsters from MongoDB: {e}")
+
+        # Fallback to JSON
+        return self._load_monsters_from_json()
+
+    async def _async_load_monsters_to_cache(self) -> None:
+        """Load monsters from MongoDB and update cache (async helper)."""
+        monsters = await self._async_load_monsters()
+        if monsters:
+            self.monster_types = monsters
+            self._build_ai_profiles()
+
+    def _load_monsters_from_json(self) -> dict:
+        """Load monster types from JSON file (fallback)."""
         monsters_file = self.config_path / "monsters.json"
         if monsters_file.exists():
             with open(monsters_file, "r") as f:
-                self.monster_types = json.load(f)
-            print(f"[MonsterService] Loaded {len(self.monster_types)} monster types")
+                monsters = json.load(f)
+            print(f"[MonsterService] Loaded {len(monsters)} monster types from JSON")
+            return monsters
         else:
             print(f"[MonsterService] Warning: {monsters_file} not found")
-            self.monster_types = {}
-        
-        # Load spawn rates
+            return {}
+
+    def _load_spawn_rates_sync(self) -> dict:
+        """Load spawn rates configuration (synchronous)."""
+        # Try MongoDB first if available
+        if settings.mongodb.is_enabled and mongodb_manager.is_connected:
+            try:
+                import asyncio
+                loop = asyncio.get_event_loop()
+                if loop.is_running():
+                    # In async context, schedule task
+                    asyncio.create_task(self._async_load_spawn_rates_to_cache())
+                    # Return from JSON for now
+                    return self._load_spawn_rates_from_json()
+                else:
+                    # Can use run_until_complete
+                    return loop.run_until_complete(self._async_load_spawn_rates())
+            except Exception as e:
+                print(f"[MonsterService] Error loading spawn rates from MongoDB: {e}")
+
+        # Fallback to JSON
+        return self._load_spawn_rates_from_json()
+
+    async def _async_load_spawn_rates(self) -> dict:
+        """Load spawn rates from MongoDB (async)."""
+        try:
+            doc = await mongodb_manager.db.spawn_rates.find_one({"config_version": "1.0"})
+            if doc:
+                # Remove MongoDB-specific fields
+                doc.pop("_id", None)
+                doc.pop("config_version", None)
+                doc.pop("created_at", None)
+                doc.pop("last_updated", None)
+                print("[MonsterService] Loaded spawn rates from MongoDB")
+                return doc
+        except Exception as e:
+            print(f"[MonsterService] Error loading from MongoDB: {e}")
+
+        # Fallback to JSON
+        return self._load_spawn_rates_from_json()
+
+    async def _async_load_spawn_rates_to_cache(self) -> None:
+        """Async helper to load spawn rates and update cache."""
+        self.spawn_rates = await self._async_load_spawn_rates()
+
+    def _load_spawn_rates_from_json(self) -> dict:
+        """Load spawn rates from JSON file."""
         spawn_file = self.config_path / "spawn_rates.json"
         if spawn_file.exists():
             with open(spawn_file, "r") as f:
-                self.spawn_rates = json.load(f)
-            print("[MonsterService] Loaded spawn rates configuration")
+                spawn_rates = json.load(f)
+            print("[MonsterService] Loaded spawn rates from JSON")
+            return spawn_rates
         else:
-            print(f"[MonsterService] Warning: {spawn_file} not found")
-            self.spawn_rates = {
+            print(f"[MonsterService] Warning: {spawn_file} not found, using defaults")
+            return {
                 "room_spawn_chances": {},
                 "room_monster_weights": {},
                 "max_monsters_per_room": 2,
                 "min_room_area_for_spawn": 36
             }
-        self._build_ai_profiles()
 
     def _build_ai_profiles(self) -> None:
         self.ai_profiles.clear()
@@ -159,6 +292,8 @@ class MonsterService:
         room_id: str
     ) -> Optional[Monster]:
         """Create a new monster instance from a type configuration."""
+        self._ensure_initialized()
+        
         if monster_type not in self.monster_types:
             return None
         
@@ -389,6 +524,8 @@ class MonsterService:
         current_tick: int,
         log_callback: Optional[Callable[[dict], None]] = None,
     ) -> tuple[DecisionResult, SpeciesKnowledgeRecord, ThreatMemory]:
+        self._ensure_initialized()
+        
         memory = self._get_memory(monster.id, profile)
         memory.decay(current_tick)
         species_record = self.species_store.get_or_create(
@@ -851,6 +988,8 @@ class MonsterService:
         self._apply_reward_from_snapshot(snapshot, reward)
 
     async def _handle_monster_death(self, event: GameEvent) -> None:
+        self._ensure_initialized()
+        
         snapshot = event.data.get("ai_snapshot") if isinstance(event.data, dict) else None
         if not snapshot:
             return
@@ -868,6 +1007,8 @@ class MonsterService:
         This is called when monsters receive feedback (damage dealt/taken, death).
         The snapshot contains the state-action pair that led to the outcome.
         """
+        self._ensure_initialized()
+        
         monster_type = snapshot.get("monster_type")
         state_index = snapshot.get("state_index")
         action_name = snapshot.get("action")
