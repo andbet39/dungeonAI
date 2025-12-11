@@ -221,7 +221,10 @@ class MongoDBStorageService:
                     ]
 
                     if stat_ops:
-                        await self.db.player_stats.bulk_write(stat_ops)
+                        result = await self.db.player_stats.bulk_write(stat_ops)
+                        print(f"[MongoDBStorage] ✓ Saved {len(stat_ops)} player stats to MongoDB (upserted: {result.upserted_count}, modified: {result.modified_count})")
+                else:
+                    print(f"[MongoDBStorage] ⚠ No player stats to save (stats_data is empty)")
 
                 print(f"[MongoDBStorage] ✓ Saved player registry to MongoDB: {len(players_data)} players, {len(stats_data)} stats")
                 logger.info(f"[MongoDBStorage] Saved player registry: {len(players_data)} players, {len(stats_data)} stats")
