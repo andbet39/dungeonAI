@@ -129,7 +129,46 @@ onUnmounted(() => {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #1a1a1a;
+  background: radial-gradient(ellipse at top, #1e2749 0%, #16213e 40%, #0f1419 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Animated Background Decorations */
+.game-page::before {
+  content: '';
+  position: absolute;
+  width: 350px;
+  height: 350px;
+  background: #ffd700;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.06;
+  top: -100px;
+  left: -100px;
+  animation: float 20s infinite ease-in-out;
+  z-index: 0;
+}
+
+.game-page::after {
+  content: '';
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  background: #9b59b6;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.06;
+  bottom: -100px;
+  right: -100px;
+  animation: float 25s infinite ease-in-out reverse;
+  z-index: 0;
+}
+
+@keyframes float {
+  0%, 100% { transform: translate(0, 0); }
+  33% { transform: translate(30px, -30px); }
+  66% { transform: translate(-20px, 20px); }
 }
 
 .main-content {
@@ -138,15 +177,25 @@ onUnmounted(() => {
   overflow: hidden;
   gap: 0.5rem;
   padding: 0.5rem;
+  position: relative;
+  z-index: 1;
 }
 
 .left-panel,
 .right-panel {
-  background: #2c2c2c;
-  border-radius: 6px;
+  background: rgba(20, 25, 40, 0.85);
+  backdrop-filter: blur(20px);
+  border-radius: 12px;
   padding: 0.5rem;
   overflow-y: auto;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.left-panel:hover,
+.right-panel:hover {
+  border-color: rgba(255, 215, 0, 0.35);
 }
 
 .left-panel {
@@ -168,10 +217,12 @@ onUnmounted(() => {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #1a1a1a;
-  border-radius: 6px;
+  background: rgba(15, 18, 30, 0.7);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
   padding: 0.5rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 215, 0, 0.2);
 }
 
 ::-webkit-scrollbar {
@@ -179,16 +230,16 @@ onUnmounted(() => {
 }
 
 ::-webkit-scrollbar-track {
-  background: #1a1a1a;
+  background: rgba(255, 215, 0, 0.05);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #555;
+  background: rgba(255, 215, 0, 0.3);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #666;
+  background: rgba(255, 215, 0, 0.5);
 }
 </style>

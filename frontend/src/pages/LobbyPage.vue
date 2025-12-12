@@ -2,8 +2,10 @@
   <div class="lobby-page">
     <header class="header">
       <div class="header-left">
-        <router-link to="/" class="back-btn">← Home</router-link>
         <h1>🗡️ DungeonAI Lobby</h1>
+        <button v-if="isAdmin" @click="goToArena" class="admin-arena-btn">
+          🤖 AI Arena
+        </button>
       </div>
       <div class="header-right">
         <div class="player-info" v-if="playerToken">
@@ -28,25 +30,34 @@
           <div class="player-xp" v-if="playerStats">
             ⭐ {{ playerStats.experience_earned || 0 }} XP
           </div>
+          <button v-if="selectedProfile" @click="changeProfile" class="change-profile-btn">Change Profile</button>
         </div>
       </div>
     </header>
 
     <main class="lobby-content">
-      <!-- Loading State -->
-      <div class="loading-state" v-if="isLoading">
-        <div class="loading-spinner"></div>
-        <p>Loading games...</p>
-      </div>
+      <!-- Profile Selection -->
+      <ProfileSelector 
+        v-if="!selectedProfile" 
+        @profile-selected="onProfileSelected"
+      />
 
-      <!-- Error State -->
-      <div class="error-state" v-else-if="error">
-        <p class="error-message">{{ error }}</p>
-        <button class="retry-btn" @click="fetchGames">Retry</button>
-      </div>
+      <!-- Main Lobby Content (only show when profile is selected) -->
+      <template v-else>
+        <!-- Loading State -->
+        <div class="loading-state" v-if="isLoading">
+          <div class="loading-spinner"></div>
+          <p>Loading games...</p>
+        </div>
 
-      <!-- Main Lobby Content - Two Column Layout -->
-      <div class="two-column-layout" v-else>
+        <!-- Error State -->
+        <div class="error-state" v-else-if="error">
+          <p class="error-message">{{ error }}</p>
+          <button class="retry-btn" @click="fetchGames">Retry</button>
+        </div>
+
+        <!-- Main Lobby Content - Two Column Layout -->
+        <div class="two-column-layout" v-else>
         <!-- Left Column: Game Related Content -->
         <div class="left-column">
           <!-- Quick Join Section -->
@@ -202,66 +213,49 @@
             </div>
           </section>
 
-          <section class="leaderboard-section">
-            <div class="leaderboard-header">
-              <h2>🏆 Leaderboard</h2>
-              <button class="refresh-btn" @click="fetchLeaderboard" :disabled="isLoadingLeaderboard">
-                🔄
-              </button>
-            </div>
-            <div class="leaderboard-content" v-if="leaderboard.length > 0">
-              <div class="leaderboard-table">
-                <div 
-                  v-for="entry in leaderboard" 
-                  :key="entry.token"
-                  class="leaderboard-row"
-                  :class="{ 'my-row': entry.token === playerToken }"
-                >
-                  <span class="rank">
-                    <span v-if="entry.rank === 1">🥇</span>
-                    <span v-else-if="entry.rank === 2">🥈</span>
-                    <span v-else-if="entry.rank === 3">🥉</span>
-                    <span v-else>#{{ entry.rank }}</span>
-                  </span>
-                  <div class="player-info">
-                    <span class="name">{{ entry.full_title }}</span>
-                    <div class="stats-line">
-                      <span class="xp">{{ entry.experience }} XP</span>
-                      <span class="kills">⚔️ {{ entry.kills }}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="no-leaderboard" v-else>
-              <p>No heroes yet. Be the first to slay monsters!</p>
-            </div>
+          <!-- Leaderboard Button Section -->
+          <section class="leaderboard-action-section">
+            <h2>🏆 Global Rankings</h2>
+            <p class="section-desc">View the top heroes across all dungeons</p>
+            <button class="view-leaderboard-btn" @click="showLeaderboardModal = true">
+              <span class="btn-icon">🏆</span>
+              <span class="btn-text">View Full Leaderboard</span>
+            </button>
           </section>
         </div>
       </div>
+      </template>
     </main>
+
+    <!-- Leaderboard Modal -->
+    <LeaderboardModal 
+      :is-open="showLeaderboardModal" 
+      :player-token="playerToken"
+      @close="showLeaderboardModal = false"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { usePlayerStore } from '../stores/playerStore'
+import ProfileSelector from '../components/ProfileSelector.vue'
+import LeaderboardModal from '../components/LeaderboardModal.vue'
 
 const router = useRouter()
 const playerStore = usePlayerStore()
 
 // State
 const games = ref([])
-const leaderboard = ref([])
 const customGameName = ref('')
 const selectedMapSize = ref('medium')
-const isLoading = ref(true)
-const isLoadingLeaderboard = ref(false)
+const isLoading = ref(false) // Start false, will be set to true when fetching
 const isJoining = ref(false)
 const isCreating = ref(false)
 const isGeneratingNickname = ref(false)
 const error = ref(null)
+const showLeaderboardModal = ref(false)
 
 // Name editing state
 const isEditingName = ref(false)
@@ -280,6 +274,58 @@ const mapSizePresets = {
 const playerToken = computed(() => playerStore.playerToken)
 const playerStats = computed(() => playerStore.playerStats)
 const fullTitle = computed(() => playerStore.fullTitle)
+const selectedProfile = computed(() => playerStore.selectedProfile)
+const isAdmin = computed(() => playerStore.isAdmin)
+
+// Navigation
+const goToArena = () => {
+  router.push('/arena')
+}
+
+// Profile selection handler
+const onProfileSelected = async () => {
+  console.log('Profile selected, fetching data...')
+  console.log('Selected profile:', playerStore.selectedProfile)
+  try {
+    // Profile is now selected, fetch games and stats
+    // Note: selectProfile already fetches stats, but we fetch again to ensure latest data
+    await fetchGames()
+    
+    // Ensure stats are loaded (selectProfile should have already loaded them)
+    if (!playerStore.playerStats) {
+      console.log('Stats not loaded, fetching...')
+      await playerStore.fetchStats()
+    }
+    
+    console.log('Data fetched successfully, playerStats:', playerStore.playerStats)
+    
+    // Start auto-refresh now that profile is selected
+    if (!refreshInterval) {
+      refreshInterval = setInterval(() => {
+        fetchGames()
+      }, 10000)
+    }
+  } catch (err) {
+    console.error('Error in onProfileSelected:', err)
+    error.value = 'Failed to load lobby data'
+  }
+}
+
+// Change profile - clear selected profile to show selector
+const changeProfile = async () => {
+  // Stop refresh interval
+  if (refreshInterval) {
+    clearInterval(refreshInterval)
+    refreshInterval = null
+  }
+  
+  // Clear selected profile (will show ProfileSelector and clear cookie)
+  await playerStore.clearSelectedProfile()
+  
+  // Reset lobby state
+  games.value = []
+  error.value = null
+}
 
 // Sorted kills by type for display
 const sortedKillsByType = computed(() => {
@@ -334,7 +380,9 @@ const fetchGames = async () => {
   error.value = null
   
   try {
-    const response = await fetch('/api/lobby')
+    const response = await fetch('/api/lobby', {
+      credentials: 'include'
+    })
     if (!response.ok) {
       throw new Error('Failed to fetch games')
     }
@@ -348,27 +396,6 @@ const fetchGames = async () => {
   }
 }
 
-// Fetch leaderboard
-const fetchLeaderboard = async () => {
-  isLoadingLeaderboard.value = true
-  try {
-    const response = await fetch('/api/leaderboard?limit=10')
-    if (response.ok) {
-      const data = await response.json()
-      leaderboard.value = data.leaderboard || []
-    }
-  } catch (e) {
-    console.error('Error fetching leaderboard:', e)
-  } finally {
-    isLoadingLeaderboard.value = false
-  }
-}
-
-// Fetch player stats
-const fetchPlayerStats = async () => {
-  await playerStore.fetchStats()
-}
-
 // Quick join - find or create a joinable game
 const quickJoin = async () => {
   isJoining.value = true
@@ -378,9 +405,9 @@ const quickJoin = async () => {
     const response = await fetch('/api/games', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'X-Player-Token': playerToken.value
+        'Content-Type': 'application/json'
       },
+      credentials: 'include',
       body: JSON.stringify({})
     })
     
@@ -409,9 +436,9 @@ const createGame = async () => {
     const response = await fetch('/api/games', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'X-Player-Token': playerToken.value
+        'Content-Type': 'application/json'
       },
+      credentials: 'include',
       body: JSON.stringify({
         name: customGameName.value || null,
         auto_join: false,
@@ -446,9 +473,9 @@ const joinGame = async (gameId) => {
     const response = await fetch(`/api/games/${gameId}/join`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'X-Player-Token': playerToken.value
-      }
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include'
     })
     
     if (!response.ok) {
@@ -471,15 +498,16 @@ let refreshInterval = null
 
 // Initialize on mount
 onMounted(() => {
-  fetchGames()
-  fetchPlayerStats()
-  fetchLeaderboard()
-  
-  // Auto-refresh every 10 seconds
-  refreshInterval = setInterval(() => {
+  // Only fetch if profile is already selected
+  if (selectedProfile.value) {
     fetchGames()
-    fetchLeaderboard()
-  }, 10000)
+    playerStore.fetchStats()
+    
+    // Auto-refresh every 10 seconds
+    refreshInterval = setInterval(() => {
+      fetchGames()
+    }, 10000)
+  }
 })
 
 // Cleanup on unmount
@@ -493,18 +521,58 @@ onUnmounted(() => {
 <style scoped>
 .lobby-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  background: radial-gradient(ellipse at top, #1e2749 0%, #16213e 40%, #0f1419 100%);
   color: #ecf0f1;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Animated Background Decorations */
+.lobby-page::before {
+  content: '';
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  background: #ffd700;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.08;
+  top: -100px;
+  left: -100px;
+  animation: float 20s infinite ease-in-out;
+}
+
+.lobby-page::after {
+  content: '';
+  position: absolute;
+  width: 350px;
+  height: 350px;
+  background: #9b59b6;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.08;
+  bottom: -100px;
+  right: -100px;
+  animation: float 25s infinite ease-in-out reverse;
+}
+
+@keyframes float {
+  0%, 100% { transform: translate(0, 0); }
+  33% { transform: translate(30px, -30px); }
+  66% { transform: translate(-20px, 20px); }
 }
 
 .header {
-  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+  background: rgba(20, 25, 40, 0.8);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 215, 0, 0.3);
   padding: 1rem 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 2px solid #ffd700;
-  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
+  position: relative;
+  z-index: 10;
 }
 
 .header-left {
@@ -516,23 +584,72 @@ onUnmounted(() => {
 .header h1 {
   font-size: 1.8rem;
   color: #ffd700;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.admin-arena-btn {
+  background: linear-gradient(135deg, rgba(155, 89, 182, 0.2) 0%, rgba(142, 68, 173, 0.15) 100%);
+  color: #9b59b6;
+  border: 1px solid rgba(155, 89, 182, 0.4);
+  padding: 0.625rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.admin-arena-btn:hover {
+  background: linear-gradient(135deg, rgba(155, 89, 182, 0.3) 0%, rgba(142, 68, 173, 0.2) 100%);
+  border-color: rgba(155, 89, 182, 0.6);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(155, 89, 182, 0.3);
 }
 
 .back-btn {
-  background: rgba(255, 255, 255, 0.1);
-  color: #ecf0f1;
-  border: 1px solid #555;
-  padding: 0.5rem 1rem;
+  background: rgba(255, 215, 0, 0.1);
+  color: #ffd700;
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  padding: 0.625rem 1.25rem;
   border-radius: 8px;
   text-decoration: none;
   font-size: 0.9rem;
-  transition: all 0.2s ease;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
 }
 
 .back-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: #3498db;
+  background: rgba(255, 215, 0, 0.2);
+  border-color: rgba(255, 215, 0, 0.5);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.2);
+}
+
+.change-profile-btn {
+  background: rgba(255, 215, 0, 0.1);
+  color: #ffd700;
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.change-profile-btn:hover {
+  background: rgba(255, 215, 0, 0.2);
+  border-color: rgba(255, 215, 0, 0.5);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.2);
 }
 
 .player-token {
@@ -548,14 +665,18 @@ onUnmounted(() => {
 .lobby-content {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 1.5rem;
+  position: relative;
+  z-index: 1;
+  height: calc(100vh - 80px);
+  overflow-y: hidden;
 }
 
 /* Two Column Layout */
 .two-column-layout {
   display: grid;
-  grid-template-columns: 1fr 380px;
-  gap: 2rem;
+  grid-template-columns: 1fr 400px;
+  gap: 1.5rem;
   align-items: start;
 }
 
@@ -567,10 +688,12 @@ onUnmounted(() => {
 
 .right-column {
   position: sticky;
-  top: 2rem;
+  top: 1rem;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  max-height: calc(100vh - 100px);
+  overflow-y: hidden;
 }
 
 .right-column .leaderboard-section {
@@ -588,16 +711,20 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   padding: 4rem;
+  background: rgba(20, 25, 40, 0.85);
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 215, 0, 0.2);
 }
 
 .loading-spinner {
-  width: 50px;
-  height: 50px;
-  border: 4px solid #333;
+  width: 60px;
+  height: 60px;
+  border: 4px solid rgba(255, 215, 0, 0.1);
   border-top: 4px solid #ffd700;
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 @keyframes spin {
@@ -605,38 +732,62 @@ onUnmounted(() => {
   100% { transform: rotate(360deg); }
 }
 
+.loading-state p {
+  color: #a0aec0;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
 /* Error State */
 .error-state {
   text-align: center;
-  padding: 2rem;
+  padding: 3rem;
+  background: rgba(20, 25, 40, 0.85);
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
+  border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
 .error-message {
-  color: #e74c3c;
-  margin-bottom: 1rem;
+  color: #fca5a5;
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+  font-weight: 500;
 }
 
 .retry-btn {
-  background: #e74c3c;
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
   color: white;
   border: none;
-  padding: 0.75rem 1.5rem;
+  padding: 0.875rem 2rem;
   border-radius: 8px;
   cursor: pointer;
   font-size: 1rem;
-  transition: all 0.2s ease;
+  font-weight: 700;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
 }
 
 .retry-btn:hover {
-  background: #c0392b;
+  background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
 }
 
 /* Sections */
 section {
-  background: rgba(44, 62, 80, 0.5);
-  border-radius: 12px;
+  background: rgba(20, 25, 40, 0.85);
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
   padding: 1.5rem;
-  border: 1px solid #444;
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+section:hover {
+  border-color: rgba(255, 215, 0, 0.35);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(255, 215, 0, 0.1);
 }
 
 .left-column section {
@@ -644,45 +795,54 @@ section {
 }
 
 section h2 {
-  font-size: 1.3rem;
+  font-size: 1.25rem;
   color: #ffd700;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.625rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
 }
 
 .section-desc {
-  color: #95a5a6;
+  color: #a0aec0;
   font-size: 0.9rem;
   margin-bottom: 1rem;
+  font-weight: 400;
 }
 
 /* Quick Join Section */
 .quick-join-section {
   text-align: center;
-  background: linear-gradient(135deg, rgba(39, 174, 96, 0.2) 0%, rgba(46, 204, 113, 0.1) 100%);
-  border-color: #27ae60;
+  background: linear-gradient(135deg, rgba(39, 174, 96, 0.15) 0%, rgba(46, 204, 113, 0.08) 100%);
+  border-color: rgba(39, 174, 96, 0.4);
+}
+
+.quick-join-section:hover {
+  border-color: rgba(39, 174, 96, 0.5);
 }
 
 .quick-join-btn {
   background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
-  color: white;
+  color: #fff;
   border: none;
-  padding: 1rem 3rem;
+  padding: 1rem 2.5rem;
   border-radius: 10px;
-  font-size: 1.2rem;
-  font-weight: bold;
+  font-size: 1.1rem;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4);
+  box-shadow: 0 6px 20px rgba(39, 174, 96, 0.35);
 }
 
 .quick-join-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(39, 174, 96, 0.6);
+  box-shadow: 0 8px 25px rgba(39, 174, 96, 0.5);
 }
 
 .quick-join-btn:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
 }
 
 /* Create Section */
@@ -696,12 +856,13 @@ section h2 {
 .game-name-input {
   flex: 1;
   min-width: 200px;
-  background: #1a1a2e;
-  border: 1px solid #555;
+  background: rgba(15, 18, 30, 0.8);
+  border: 1px solid rgba(255, 215, 0, 0.25);
   border-radius: 8px;
-  padding: 0.75rem 1rem;
-  color: #ecf0f1;
+  padding: 0.875rem 1rem;
+  color: #fff;
   font-size: 1rem;
+  transition: all 0.3s;
 }
 
 .game-name-input::placeholder {
@@ -710,7 +871,9 @@ section h2 {
 
 .game-name-input:focus {
   outline: none;
-  border-color: #3498db;
+  border-color: #ffd700;
+  background: rgba(15, 18, 30, 0.95);
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
 }
 
 .map-size-options {
@@ -726,19 +889,21 @@ section h2 {
 }
 
 .size-select {
-  background: #1a1a2e;
-  border: 1px solid #555;
+  background: rgba(15, 18, 30, 0.8);
+  border: 1px solid rgba(255, 215, 0, 0.25);
   border-radius: 8px;
-  padding: 0.75rem 1rem;
+  padding: 0.875rem 1rem;
   color: #ecf0f1;
   font-size: 0.9rem;
   cursor: pointer;
   min-width: 180px;
+  transition: all 0.3s;
 }
 
 .size-select:focus {
   outline: none;
-  border-color: #3498db;
+  border-color: #ffd700;
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
 }
 
 .size-select option {
@@ -747,23 +912,27 @@ section h2 {
 }
 
 .create-btn {
-  background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
-  color: white;
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+  color: #1a1a2e;
   border: none;
-  padding: 0.75rem 1.5rem;
+  padding: 0.875rem 1.5rem;
   border-radius: 8px;
   font-size: 1rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
 }
 
 .create-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #8e44ad 0%, #7d3c98 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 215, 0, 0.5);
 }
 
 .create-btn:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
 }
 
 /* Games Section */
@@ -779,23 +948,28 @@ section h2 {
 }
 
 .refresh-btn {
-  background: rgba(52, 152, 219, 0.2);
-  color: #3498db;
-  border: 1px solid #3498db;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
+  background: rgba(52, 152, 219, 0.15);
+  color: #5dade2;
+  border: 1px solid rgba(52, 152, 219, 0.4);
+  padding: 0.625rem 1.125rem;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 0.9rem;
-  transition: all 0.2s ease;
+  font-weight: 600;
+  transition: all 0.3s ease;
 }
 
 .refresh-btn:hover:not(:disabled) {
-  background: rgba(52, 152, 219, 0.4);
+  background: rgba(52, 152, 219, 0.25);
+  border-color: rgba(52, 152, 219, 0.6);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
 }
 
 .refresh-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
 }
 
 .games-list {
@@ -805,36 +979,41 @@ section h2 {
 }
 
 .game-card {
-  background: #1a1a2e;
-  border-radius: 10px;
-  padding: 1rem 1.5rem;
+  background: rgba(15, 18, 30, 0.7);
+  border-radius: 12px;
+  padding: 1.25rem 1.75rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border: 1px solid #333;
-  transition: all 0.2s ease;
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
 }
 
 .game-card.joinable {
-  border-color: #27ae60;
+  border-color: rgba(39, 174, 96, 0.4);
 }
 
 .game-card.joinable:hover {
-  background: #1a2a3a;
-  border-color: #2ecc71;
+  background: rgba(39, 174, 96, 0.1);
+  border-color: rgba(39, 174, 96, 0.6);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(39, 174, 96, 0.2);
 }
 
 .game-card.completed {
-  border-color: #f39c12;
+  border-color: rgba(243, 156, 18, 0.4);
 }
 
 .game-card.completed:hover {
-  background: #2a2a1a;
-  border-color: #f1c40f;
+  background: rgba(243, 156, 18, 0.1);
+  border-color: rgba(243, 156, 18, 0.6);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(243, 156, 18, 0.2);
 }
 
 .game-card.full {
-  opacity: 0.7;
+  opacity: 0.6;
 }
 
 .game-name {
@@ -873,62 +1052,80 @@ section h2 {
   background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
   color: white;
   border: none;
-  padding: 0.5rem 1.5rem;
-  border-radius: 6px;
+  padding: 0.625rem 1.5rem;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 0.9rem;
-  font-weight: bold;
-  transition: all 0.2s ease;
+  font-weight: 700;
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 12px rgba(39, 174, 96, 0.3);
 }
 
 .join-btn:hover:not(:disabled) {
   background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 18px rgba(39, 174, 96, 0.4);
 }
 
 .join-btn:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
 }
 
 .full-badge {
-  background: #7f8c8d;
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
+  background: rgba(127, 140, 141, 0.3);
+  color: #95a5a6;
+  padding: 0.625rem 1.25rem;
+  border-radius: 8px;
   font-size: 0.9rem;
+  font-weight: 600;
+  border: 1px solid rgba(127, 140, 141, 0.4);
 }
 
 .enter-btn {
   background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
   color: white;
   border: none;
-  padding: 0.5rem 1.5rem;
-  border-radius: 6px;
+  padding: 0.625rem 1.5rem;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 0.9rem;
-  font-weight: bold;
-  transition: all 0.2s ease;
+  font-weight: 700;
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 12px rgba(243, 156, 18, 0.3);
 }
 
 .enter-btn:hover:not(:disabled) {
   background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 18px rgba(243, 156, 18, 0.4);
 }
 
 .enter-btn:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
 }
 
 .no-games {
   text-align: center;
-  padding: 2rem;
-  color: #95a5a6;
+  padding: 3rem 2rem;
+  color: #a0aec0;
+  background: rgba(15, 18, 30, 0.5);
+  border-radius: 12px;
+  border: 1px dashed rgba(255, 215, 0, 0.2);
+}
+
+.no-games p:first-child {
+  font-size: 1.1rem;
+  font-weight: 500;
 }
 
 .no-games .hint {
-  font-size: 0.9rem;
-  margin-top: 0.5rem;
-  color: #666;
+  font-size: 0.95rem;
+  margin-top: 0.75rem;
+  color: #718096;
 }
 
 /* Header Player Info */
@@ -978,121 +1175,68 @@ section h2 {
 }
 
 .name-input {
-  background: #1a1a2e;
+  background: rgba(15, 18, 30, 0.95);
   border: 2px solid #ffd700;
   border-radius: 8px;
-  padding: 0.5rem 1rem;
+  padding: 0.625rem 1rem;
   color: #ffd700;
   font-size: 1rem;
   min-width: 200px;
+  transition: all 0.3s;
+  font-weight: 600;
 }
 
 .name-input:focus {
   outline: none;
-  box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+  box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.15);
 }
 
 .player-xp {
-  background: linear-gradient(135deg, rgba(155, 89, 182, 0.3) 0%, rgba(142, 68, 173, 0.2) 100%);
-  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, rgba(155, 89, 182, 0.25) 0%, rgba(142, 68, 173, 0.15) 100%);
+  backdrop-filter: blur(10px);
+  padding: 0.625rem 1.25rem;
   border-radius: 8px;
-  font-weight: bold;
+  font-weight: 700;
   color: #e8a2ff;
-  border: 1px solid #9b59b6;
+  border: 1px solid rgba(155, 89, 182, 0.4);
+  box-shadow: 0 2px 10px rgba(155, 89, 182, 0.2);
 }
 
-/* Leaderboard Section */
-.leaderboard-section {
-  background: linear-gradient(135deg, rgba(241, 196, 15, 0.1) 0%, rgba(243, 156, 18, 0.05) 100%);
-  border-color: #f1c40f;
-}
-
-.leaderboard-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.leaderboard-header h2 {
-  margin-bottom: 0;
-}
-
-.leaderboard-content {
-  max-height: 350px;
-  overflow-y: auto;
-}
-
-.leaderboard-table {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.leaderboard-row {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  background: rgba(26, 26, 46, 0.8);
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
-  border: 1px solid #333;
-  transition: all 0.2s ease;
-}
-
-.leaderboard-row:hover {
-  background: rgba(26, 26, 46, 0.95);
-  border-color: #555;
-}
-
-.leaderboard-row.my-row {
-  background: rgba(52, 152, 219, 0.2);
-  border-color: #3498db;
-}
-
-.leaderboard-row .rank {
-  font-size: 1.2rem;
-  font-weight: bold;
+/* Leaderboard Action Section */
+.leaderboard-action-section {
+  background: linear-gradient(135deg, rgba(241, 196, 15, 0.15) 0%, rgba(243, 156, 18, 0.08) 100%);
+  border-color: rgba(241, 196, 15, 0.4);
   text-align: center;
-  color: #95a5a6;
-  min-width: 40px;
 }
 
-.leaderboard-row .player-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  min-width: 0;
+.leaderboard-action-section:hover {
+  border-color: rgba(241, 196, 15, 0.5);
 }
 
-.leaderboard-row .name {
-  font-weight: 500;
-  color: #ecf0f1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.view-leaderboard-btn {
+  background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 700;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 20px rgba(243, 156, 18, 0.35);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
-.leaderboard-row .stats-line {
-  display: flex;
-  gap: 1rem;
-  font-size: 0.85rem;
+.view-leaderboard-btn:hover {
+  background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(243, 156, 18, 0.5);
 }
 
-.leaderboard-row .xp {
-  color: #e8a2ff;
-  font-weight: bold;
-}
-
-.leaderboard-row .kills {
-  color: #e74c3c;
-}
-
-.no-leaderboard {
-  text-align: center;
-  padding: 2rem;
-  color: #95a5a6;
+.view-leaderboard-btn .btn-icon {
+  font-size: 1.5rem;
 }
 
 /* Stats Section */
@@ -1104,7 +1248,7 @@ section h2 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .stats-header h2 {
@@ -1115,40 +1259,57 @@ section h2 {
   background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
   color: white;
   border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
+  padding: 0.625rem 1.125rem;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 0.85rem;
-  transition: all 0.2s ease;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 12px rgba(155, 89, 182, 0.3);
 }
 
 .nickname-btn:hover:not(:disabled) {
   background: linear-gradient(135deg, #8e44ad 0%, #7d3c98 100%);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 18px rgba(155, 89, 182, 0.4);
 }
 
 .nickname-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
 }
 
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .stat-card {
-  background: #1a1a2e;
-  border-radius: 8px;
-  padding: 1rem;
+  background: rgba(15, 18, 30, 0.7);
+  backdrop-filter: blur(10px);
+  border-radius: 10px;
+  padding: 1rem 0.75rem;
   text-align: center;
-  border: 1px solid #333;
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  border-color: rgba(255, 215, 0, 0.35);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
 }
 
 .stat-card.highlight {
-  background: linear-gradient(135deg, rgba(155, 89, 182, 0.2) 0%, rgba(142, 68, 173, 0.1) 100%);
-  border-color: #9b59b6;
+  background: linear-gradient(135deg, rgba(155, 89, 182, 0.25) 0%, rgba(142, 68, 173, 0.15) 100%);
+  border-color: rgba(155, 89, 182, 0.5);
+}
+
+.stat-card.highlight:hover {
+  border-color: rgba(155, 89, 182, 0.7);
+  box-shadow: 0 6px 20px rgba(155, 89, 182, 0.3);
 }
 
 .stat-card.highlight .stat-value {
@@ -1157,54 +1318,68 @@ section h2 {
 
 .stat-value {
   display: block;
-  font-size: 1.8rem;
-  font-weight: bold;
-  color: #3498db;
-  margin-bottom: 0.25rem;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #ffd700;
+  margin-bottom: 0.375rem;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
 }
 
 .stat-label {
-  font-size: 0.85rem;
-  color: #95a5a6;
+  font-size: 0.8rem;
+  color: #a0aec0;
+  font-weight: 500;
 }
 
 /* Kills Breakdown */
 .kills-breakdown {
-  margin-top: 1.5rem;
-  padding-top: 1rem;
-  border-top: 1px solid #444;
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(255, 215, 0, 0.15);
 }
 
 .kills-breakdown h3 {
-  font-size: 1rem;
+  font-size: 1.05rem;
   color: #e74c3c;
-  margin-bottom: 0.75rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-shadow: 0 0 10px rgba(231, 76, 60, 0.3);
 }
 
 .kill-types {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.625rem;
 }
 
 .kill-type {
-  background: rgba(231, 76, 60, 0.15);
-  border: 1px solid rgba(231, 76, 60, 0.3);
-  padding: 0.4rem 0.75rem;
+  background: rgba(231, 76, 60, 0.12);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(231, 76, 60, 0.35);
+  padding: 0.5rem 0.875rem;
   border-radius: 20px;
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.kill-type:hover {
+  background: rgba(231, 76, 60, 0.18);
+  border-color: rgba(231, 76, 60, 0.5);
+  transform: translateY(-1px);
 }
 
 .kill-type .monster-type {
   color: #ecf0f1;
+  font-weight: 500;
 }
 
 .kill-type .kill-count {
   color: #e74c3c;
-  font-weight: bold;
+  font-weight: 700;
 }
 
 /* Responsive */

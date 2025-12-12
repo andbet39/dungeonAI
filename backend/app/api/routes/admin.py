@@ -2,7 +2,7 @@
 Admin API endpoints for DungeonAI.
 """
 from typing import Optional
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Depends
 from pydantic import BaseModel
 
 from ...core import game_manager
@@ -11,8 +11,10 @@ from ...core.sandbox import sandbox_manager
 from ...services import storage_service, monster_service
 from ...domain import Room
 from ...domain.intelligence.learning import AIAction
+from ...api.deps import require_admin
+from ...domain.entities.user import User
 
-router = APIRouter(prefix="/api/admin", tags=["admin"])
+router = APIRouter(prefix="/api/admin", tags=["admin"], dependencies=[Depends(require_admin)])
 
 
 class RegenerateMapRequest(BaseModel):
@@ -89,6 +91,14 @@ async def force_save():
     """Force save the current game state."""
     success = await game_manager.force_save()
     return {"success": success}
+
+
+@router.post("/save-stats")
+async def force_save_player_stats():
+    """Force save player stats to MongoDB/storage."""
+    from ...services.player_stats import player_stats_tracker
+    await player_stats_tracker.force_save()
+    return {"success": True, "player_count": len(player_stats_tracker._stats)}
 
 
 @router.delete("/maps/{save_id}")

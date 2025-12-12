@@ -3,6 +3,7 @@ DungeonAI - Main FastAPI application entry point.
 Multi-game architecture with lobby system.
 """
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -13,7 +14,7 @@ from .config import settings
 from .services import game_registry, player_registry, get_storage_backend_name
 from .services.player_stats import player_stats_tracker
 from .services.monster_service import monster_service
-from .api import admin_router, game_router, websocket_router
+from .api import admin_router, game_router, websocket_router, auth_router
 from .db import mongodb_manager
 
 
@@ -125,6 +126,20 @@ def create_app() -> FastAPI:
         lifespan=lifespan
     )
     
+    # Add CORS middleware for cookie-based authentication
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[
+            "http://localhost:5173",  # Vite dev server
+            "http://localhost:8000",  # Production server
+            "http://127.0.0.1:5173",
+            "http://127.0.0.1:8000"
+        ],
+        allow_credentials=True,  # Required for cookies
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+    
     # Mount static files directory
     if settings.static_dir.exists():
         app.mount("/static", StaticFiles(directory=settings.static_dir), name="static")
@@ -133,6 +148,7 @@ def create_app() -> FastAPI:
     templates = Jinja2Templates(directory=settings.templates_dir)
     
     # Include routers
+    app.include_router(auth_router)
     app.include_router(admin_router)
     app.include_router(game_router)
     app.include_router(websocket_router)

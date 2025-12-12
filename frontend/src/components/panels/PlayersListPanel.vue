@@ -40,44 +40,67 @@ export default {
 
 <style scoped>
 .players-section h2 {
-  font-size: 0.85rem;
-  color: #3498db;
-  margin-bottom: 0.3rem;
-  padding-bottom: 0.25rem;
-  border-bottom: 1px solid #444;
+  font-size: 0.9rem;
+  color: #ffd700;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+  font-weight: 700;
 }
 
 .players-list {
-  max-height: 100px;
+  max-height: 150px;
   overflow-y: auto;
+}
+
+.players-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.players-list::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 3px;
+}
+
+.players-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 215, 0, 0.3);
+  border-radius: 3px;
+}
+
+.players-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 215, 0, 0.5);
 }
 
 .player-item {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.3rem;
-  margin-bottom: 0.2rem;
-  background: #1a1a1a;
-  border-radius: 4px;
-  border: 1px solid transparent;
+  gap: 0.5rem;
+  padding: 0.4rem;
+  margin-bottom: 0.3rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 215, 0, 0.15);
   transition: all 0.2s ease;
 }
 
 .player-item:hover {
-  background: #252525;
-  border-color: #3498db;
+  background: rgba(255, 215, 0, 0.05);
+  border-color: rgba(255, 215, 0, 0.3);
+  transform: translateX(2px);
 }
 
 .player-item.is-you {
-  background: #2a3f5f;
-  border-color: #3498db;
+  background: rgba(255, 215, 0, 0.1);
+  border-color: rgba(255, 215, 0, 0.4);
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
 }
 
 .player-symbol {
-  font-size: 1rem;
-  font-weight: bold;
+  font-size: 1.1rem;
+  font-weight: 700;
   font-family: monospace;
+  text-shadow: 0 0 8px currentColor;
 }
 
 .player-info {
@@ -85,13 +108,15 @@ export default {
 }
 
 .player-name {
-  font-weight: bold;
-  color: #ecf0f1;
-  font-size: 0.7rem;
+  font-weight: 700;
+  color: #ffd700;
+  font-size: 0.75rem;
+  text-shadow: 0 0 5px rgba(255, 215, 0, 0.2);
 }
 
 .player-pos {
-  font-size: 0.6rem;
-  color: #95a5a6;
+  font-size: 0.65rem;
+  color: #8e949e;
+  margin-top: 0.1rem;
 }
 </style>

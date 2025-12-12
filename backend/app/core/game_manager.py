@@ -575,6 +575,7 @@ class GameManager:
                     type=EventType.PLAYER_ENTERED_ROOM,
                     source_id=player_id,
                     data={
+                        "player_token": player_id,
                         "room_id": initial_room.id,
                         "first_visit": True,
                     },
@@ -646,17 +647,22 @@ class GameManager:
             if new_room_id != player.current_room_id:
                 player.current_room_id = new_room_id
                 if new_room:
-                    if not new_room.visited:
+                    first_visit = not new_room.visited
+                    if first_visit:
                         new_room.visited = True
                         await self._spawn_monsters_in_room(new_room)
                         self._mark_dirty()
-                    
+
                     result["room_entered"] = new_room.get_info()
-                    
+
                     await event_bus.emit_async(GameEvent(
                         type=EventType.PLAYER_ENTERED_ROOM,
                         source_id=player_id,
-                        data={"room_id": new_room.id}
+                        data={
+                            "player_token": player_id,
+                            "room_id": new_room.id,
+                            "first_visit": first_visit
+                        }
                     ))
 
             return result
@@ -1258,7 +1264,9 @@ class GameManager:
                     type=EventType.MONSTER_DIED,
                     source_id=monster.id,
                     data={
+                        "player_token": player_id,
                         "monster_type": monster.monster_type,
+                        "challenge_rating": monster.stats.challenge_rating,
                         "fight_id": fight_id,
                         "reward": -100.0,
                         "ai_snapshot": {
@@ -1354,7 +1362,9 @@ class GameManager:
                 source_id=player.id,
                 target_id=monster.id,
                 data={
+                    "player_token": player.id,
                     "damage": actual_damage,
+                    "is_player_source": True,
                     "is_critical": True,
                     "reward": float(-actual_damage) * 2.0,
                     "ai_snapshot": {
@@ -1388,7 +1398,9 @@ class GameManager:
                 source_id=player.id,
                 target_id=monster.id,
                 data={
+                    "player_token": player.id,
                     "damage": actual_damage,
+                    "is_player_source": True,
                     "is_critical": False,
                     "reward": float(-actual_damage),
                     "ai_snapshot": {
@@ -1489,7 +1501,9 @@ class GameManager:
                 source_id=monster.id,
                 target_id=player.id,
                 data={
+                    "player_token": player.id,
                     "damage": actual_damage,
+                    "is_player_source": False,
                     "is_critical": True,
                     "reward": float(actual_damage) * 2.0,
                     "ai_snapshot": {
@@ -1521,7 +1535,9 @@ class GameManager:
                 source_id=monster.id,
                 target_id=player.id,
                 data={
+                    "player_token": player.id,
                     "damage": actual_damage,
+                    "is_player_source": False,
                     "is_critical": False,
                     "reward": float(actual_damage),
                     "ai_snapshot": {
@@ -1545,7 +1561,9 @@ class GameManager:
                 source_id=monster.id,
                 target_id=player.id,
                 data={
+                    "player_token": player.id,
                     "damage": 0,
+                    "is_player_source": False,
                     "is_critical": False,
                     "reward": -1.0,
                     "ai_snapshot": {

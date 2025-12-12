@@ -9,7 +9,7 @@ from dataclasses import dataclass, field, asdict
 from enum import Enum, auto
 
 from ..core.events import event_bus, GameEvent, EventType
-from . import storage_service
+# Import storage_service inside methods to avoid circular import at module level
 
 
 # D&D 5e Challenge Rating to XP mapping
@@ -252,17 +252,18 @@ class PlayerStatsTracker:
     def _start_periodic_save(self) -> None:
         if self._save_task is not None:
             return
-        
+
         async def periodic_save():
             while True:
-                await asyncio.sleep(120)  # Save every 2 minutes
+                await asyncio.sleep(30)  # Save every 30 seconds
                 if self._dirty:
                     await self._save()
-        
+
         self._save_task = asyncio.create_task(periodic_save())
     
     async def _load(self) -> None:
         """Load stats from disk."""
+        from ..services import storage_service
         # Stats are stored alongside player registry
         registry_data = await storage_service.load_player_registry()
         if registry_data and "stats" in registry_data:
@@ -273,11 +274,57 @@ class PlayerStatsTracker:
     
     async def _save(self) -> None:
         """Save stats to disk."""
-        # Load current registry to merge
-        registry_data = await storage_service.load_player_registry() or {}
-        registry_data["stats"] = {token: s.to_dict() for token, s in self._stats.items()}
-        await storage_service.save_player_registry(registry_data)
-        self._dirty = False
+        from ..services import storage_service, get_storage_backend_name
+        print(f"[PlayerStatsTracker._save] ===== ENTERED _save() method =====")
+        print(f"[PlayerStatsTracker._save] Stats count at entry: {len(self._stats)}")
+        try:
+            # Debug: Check which storage backend we're using
+            backend_name = get_storage_backend_name()
+            print(f"[PlayerStatsTracker._save] Using storage backend: {backend_name}")
+            print(f"[PlayerStatsTracker._save] In-memory stats count: {len(self._stats)}")
+
+            # Debug: Show what we're trying to save
+            for token, stats in self._stats.items():
+                print(f"[PlayerStatsTracker._save] Player {token[:8]}: kills={stats.monsters_killed}, damage_dealt={stats.damage_dealt}, damage_taken={stats.damage_taken}")
+
+            # Load current registry to merge
+            print(f"[PlayerStatsTracker._save] About to load player registry...")
+            registry_data = await storage_service.load_player_registry() or {}
+            print(f"[PlayerStatsTracker._save] Loaded registry keys: {list(registry_data.keys())}")
+
+            print(f"[PlayerStatsTracker._save] Converting stats to dict...")
+            stats_dict = {token: s.to_dict() for token, s in self._stats.items()}
+            print(f"[PlayerStatsTracker._save] Created stats_dict with {len(stats_dict)} entries")
+            registry_data["stats"] = stats_dict
+
+            print(f"[PlayerStatsTracker._save] Calling save_player_registry with keys: {list(registry_data.keys())}")
+            await storage_service.save_player_registry(registry_data)
+            self._dirty = False
+            print(f"[PlayerStatsTracker._save] ✓ Saved stats for {len(self._stats)} players to {backend_name}")
+        except Exception as e:
+            print(f"[PlayerStatsTracker._save] ✗ Error saving stats: {e}")
+            import traceback
+            traceback.print_exc()
+        finally:
+            print(f"[PlayerStatsTracker._save] ===== EXITING _save() method =====")
+
+    async def force_save(self) -> None:
+        """Force an immediate save of player stats."""
+        print(f"[PlayerStatsTracker.force_save] ===== ENTERED force_save() =====")
+        print(f"[PlayerStatsTracker.force_save] Stats count: {len(self._stats)}")
+        print(f"[PlayerStatsTracker.force_save] Stats tokens: {list(self._stats.keys())[:5]}")  # Show first 5
+        print(f"[PlayerStatsTracker.force_save] self._stats is truthy: {bool(self._stats)}")
+
+        # Always save when explicitly requested, even if not dirty
+        if self._stats:
+            print(f"[PlayerStatsTracker.force_save] Proceeding to save {len(self._stats)} player stats")
+            print(f"[PlayerStatsTracker.force_save] About to await _save()...")
+            await self._save()
+            print(f"[PlayerStatsTracker.force_save] _save() completed")
+        else:
+            print("[PlayerStatsTracker.force_save] No stats to save (no players tracked)")
+
+        print(f"[PlayerStatsTracker.force_save] ===== EXITING force_save() =====")
     
     def get_or_create_stats(self, token: str) -> PlayerStats:
         """Get stats for a player, creating if needed."""

@@ -130,7 +130,8 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(5px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -139,14 +140,15 @@ export default {
 }
 
 .combat-popup-card {
-  background: linear-gradient(135deg, #2c1810 0%, #1a0f0a 100%);
-  border: 3px solid #8b0000;
+  background: linear-gradient(135deg, rgba(44, 24, 16, 0.95) 0%, rgba(26, 15, 10, 0.95) 100%);
+  backdrop-filter: blur(20px);
+  border: 3px solid rgba(231, 76, 60, 0.6);
   border-radius: 16px;
   padding: 1.5rem 2rem;
-  max-width: 400px;
+  max-width: 450px;
   width: 90%;
   text-align: center;
-  box-shadow: 0 0 40px rgba(139, 0, 0, 0.5), inset 0 0 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 50px rgba(231, 76, 60, 0.4), 0 0 100px rgba(231, 76, 60, 0.2), inset 0 0 30px rgba(0, 0, 0, 0.5);
   cursor: default;
   animation: cardAppear 0.3s ease-out;
 }
@@ -170,13 +172,15 @@ export default {
   font-size: 2.5rem;
   display: block;
   margin-bottom: 0.5rem;
+  filter: drop-shadow(0 0 10px rgba(231, 76, 60, 0.5));
 }
 
 .popup-header h2 {
-  font-size: 1.5rem;
-  color: #ff4444;
+  font-size: 1.6rem;
+  color: #e74c3c;
   margin: 0;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  text-shadow: 0 0 20px rgba(231, 76, 60, 0.5), 2px 2px 4px rgba(0, 0, 0, 0.8);
+  font-weight: 700;
 }
 
 .monster-display {
@@ -206,18 +210,21 @@ export default {
 }
 
 .monster-stats {
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 215, 0, 0.2);
   border-radius: 10px;
   padding: 1rem;
   margin-bottom: 1rem;
 }
 
 .monster-stats h4 {
-  color: #e0e0e0;
+  color: #ffd700;
   margin: 0 0 0.75rem 0;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 1.2px;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+  font-weight: 700;
 }
 
 .stats-grid {
@@ -264,21 +271,29 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0.25rem;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 4px;
+  padding: 0.3rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(155, 89, 182, 0.3);
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.ability-item:hover {
+  border-color: rgba(155, 89, 182, 0.5);
+  transform: translateY(-1px);
 }
 
 .ability-name {
   font-size: 0.65rem;
-  color: #888;
+  color: #9b59b6;
   text-transform: uppercase;
+  font-weight: 700;
 }
 
 .ability-value {
-  font-size: 0.8rem;
-  font-weight: bold;
-  color: #ccc;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #ffd700;
 }
 
 .ability-value.positive {
@@ -350,12 +365,14 @@ export default {
 }
 
 .popup-hint kbd {
-  background: #333;
-  border: 1px solid #555;
-  border-radius: 3px;
-  padding: 0.1rem 0.4rem;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 4px;
+  padding: 0.15rem 0.5rem;
   font-family: monospace;
   font-size: 0.7rem;
+  color: #ffd700;
+  font-weight: 600;
 }
 
 /* Transition */

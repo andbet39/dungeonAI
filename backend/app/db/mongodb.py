@@ -87,8 +87,13 @@ class MongoDBManager:
             await self._db.games.create_index("last_activity")
             await self._db.games.create_index("created_at")
 
+            # Users collection indexes
+            await self._db.users.create_index("user_id", unique=True)
+            await self._db.users.create_index("email", unique=True)
+
             # Players collection indexes
             await self._db.players.create_index("token", unique=True)
+            await self._db.players.create_index("user_id")  # For querying all profiles of a user
 
             # Player stats collection indexes
             await self._db.player_stats.create_index("token", unique=True)
@@ -134,6 +139,12 @@ class MongoDBManager:
     def is_connected(self) -> bool:
         """Check if MongoDB connection is active."""
         return self._client is not None and self._db is not None
+
+    def get_collection(self, collection_name: str):
+        """Get a MongoDB collection by name."""
+        if self._db is None:
+            raise RuntimeError("MongoDB not connected. Call connect() first.")
+        return self._db[collection_name]
 
 
 # Global MongoDB manager instance

@@ -62,28 +62,37 @@ export default {
 
 <style scoped>
 .stats-section {
-  background: linear-gradient(135deg, #1a2a3a 0%, #1a1a2e 100%);
-  border-radius: 8px;
-  padding: 0.6rem;
-  border: 1px solid #3498db;
+  background: rgba(15, 18, 30, 0.7);
+  backdrop-filter: blur(10px);
+  border-radius: 10px;
+  padding: 0.75rem;
+  border: 1px solid rgba(231, 76, 60, 0.4);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.stats-section:hover {
+  border-color: rgba(231, 76, 60, 0.6);
 }
 
 .stats-section h2 {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   color: #e74c3c;
-  margin-bottom: 0.3rem;
-  padding-bottom: 0.25rem;
-  border-bottom: 1px solid #e74c3c;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.375rem;
+  border-bottom: 1px solid rgba(231, 76, 60, 0.3);
+  font-weight: 700;
+  text-shadow: 0 0 10px rgba(231, 76, 60, 0.3);
 }
 
 .hp-bar-container {
   position: relative;
-  height: 22px;
-  background: #333;
-  border-radius: 4px;
+  height: 24px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 6px;
   margin-bottom: 0.5rem;
   overflow: hidden;
-  border: 1px solid #555;
+  border: 1px solid rgba(255, 215, 0, 0.2);
 }
 
 .hp-bar {
@@ -129,25 +138,33 @@ export default {
 }
 
 .stat-box {
-  background: #1a1a1a;
-  border-radius: 4px;
-  padding: 0.4rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 6px;
+  padding: 0.5rem;
   text-align: center;
-  border: 1px solid #444;
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.stat-box:hover {
+  border-color: rgba(255, 215, 0, 0.35);
+  transform: translateY(-1px);
 }
 
 .stat-label {
   display: block;
-  font-size: 0.6rem;
-  color: #95a5a6;
-  margin-bottom: 0.1rem;
+  font-size: 0.65rem;
+  color: #a0aec0;
+  margin-bottom: 0.15rem;
+  font-weight: 500;
 }
 
 .stat-value {
   display: block;
-  font-size: 1rem;
-  font-weight: bold;
-  color: #ecf0f1;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ffd700;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
 }
 
 .stat-note {
@@ -166,54 +183,77 @@ export default {
 
 .ability {
   flex: 1;
-  background: #1a1a1a;
-  border-radius: 4px;
-  padding: 0.3rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 6px;
+  padding: 0.4rem;
   text-align: center;
-  border: 1px solid #444;
+  border: 1px solid rgba(155, 89, 182, 0.3);
+  transition: all 0.3s ease;
+}
+
+.ability:hover {
+  border-color: rgba(155, 89, 182, 0.5);
+  transform: translateY(-1px);
 }
 
 .ability-name {
   display: block;
-  font-size: 0.55rem;
+  font-size: 0.6rem;
   color: #9b59b6;
-  font-weight: bold;
+  font-weight: 700;
 }
 
 .ability-score {
   display: block;
-  font-size: 0.85rem;
-  font-weight: bold;
-  color: #ecf0f1;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #ffd700;
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
 }
 
 .ability-mod {
   display: block;
-  font-size: 0.6rem;
-  color: #3498db;
+  font-size: 0.65rem;
+  color: #5dade2;
+  font-weight: 600;
 }
 
 .status-effects {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.3rem;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
 }
 
 .status-badge {
-  font-size: 0.6rem;
-  padding: 0.15rem 0.4rem;
-  border-radius: 10px;
-  font-weight: bold;
+  font-size: 0.65rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 12px;
+  font-weight: 700;
+  background: linear-gradient(135deg, rgba(52, 152, 219, 0.8) 0%, rgba(41, 128, 185, 0.8) 100%);
+  border: 1px solid rgba(52, 152, 219, 0.4);
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.status-badge:hover {
+  transform: scale(1.05);
 }
 
 .status-badge.defending {
-  background: linear-gradient(135deg, #2980b9, #3498db);
+  background: linear-gradient(135deg, rgba(41, 128, 185, 0.9) 0%, rgba(52, 152, 219, 0.9) 100%);
+  border-color: rgba(52, 152, 219, 0.6);
   color: #fff;
   animation: defending-glow 1.5s ease-in-out infinite;
 }
 
 @keyframes defending-glow {
-  0%, 100% { box-shadow: 0 0 5px rgba(52, 152, 219, 0.5); }
-  50% { box-shadow: 0 0 10px rgba(52, 152, 219, 0.8); }
+  0%, 100% { 
+    box-shadow: 0 0 8px rgba(52, 152, 219, 0.5);
+  }
+  50% { 
+    box-shadow: 0 0 15px rgba(52, 152, 219, 0.8), 0 0 20px rgba(52, 152, 219, 0.4);
+  }
 }
 </style>

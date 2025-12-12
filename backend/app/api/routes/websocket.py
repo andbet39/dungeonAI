@@ -1,6 +1,7 @@
 """
 WebSocket endpoint for DungeonAI multiplayer.
-Supports multi-game routing via game_id and player_token query params.
+Supports multi-game routing via game_id query param.
+Requires authentication via cookies.
 """
 import json
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query
@@ -9,6 +10,7 @@ from typing import Optional
 from ...core import game_registry
 from ...core.sandbox import sandbox_manager
 from ...services import player_registry
+from ...services.auth_service import auth_service
 
 router = APIRouter(tags=["websocket"])
 
@@ -16,30 +18,64 @@ router = APIRouter(tags=["websocket"])
 @router.websocket("/ws")
 async def websocket_endpoint(
     websocket: WebSocket,
-    game_id: Optional[str] = Query(None),
-    player_token: Optional[str] = Query(None)
+    game_id: Optional[str] = Query(None)
 ):
     """
     WebSocket endpoint for multiplayer game communication.
     
+    Requires authentication via access_token and player_token cookies.
+    
     Query params:
         game_id: ID of game to join (optional, will auto-join if not provided)
-        player_token: Player's persistent token from localStorage
     """
     await websocket.accept()
     
-    # Require player token
+    # Extract tokens from cookies
+    access_token = websocket.cookies.get("access_token")
+    player_token = websocket.cookies.get("player_token")
+    
+    # Validate JWT authentication
+    if not access_token:
+        await websocket.send_text(json.dumps({"type": "error", "message": "Not authenticated"}))
+        await websocket.close(code=4401)
+        return
+    
+    try:
+        payload = auth_service.decode_token(access_token)
+        user_id = payload.get("sub")
+        if not user_id:
+            await websocket.send_text(json.dumps({"type": "error", "message": "Invalid token"}))
+            await websocket.close(code=4401)
+            return
+    except Exception:
+        await websocket.send_text(json.dumps({"type": "error", "message": "Authentication failed"}))
+        await websocket.close(code=4401)
+        return
+    
+    # Require player token (selected profile)
     if not player_token:
-        await websocket.send_text(json.dumps({"type": "error", "message": "player_token required"}))
-        await websocket.close()
+        await websocket.send_text(json.dumps({"type": "error", "message": "No player profile selected"}))
+        await websocket.close(code=4400)
+        return
+    
+    # Verify the player profile belongs to the authenticated user
+    profile = player_registry.get_player(player_token)
+    if not profile:
+        await websocket.send_text(json.dumps({"type": "error", "message": "Player profile not found"}))
+        await websocket.close(code=4404)
+        return
+    
+    if profile.user_id != user_id:
+        await websocket.send_text(json.dumps({"type": "error", "message": "Profile belongs to different user"}))
+        await websocket.close(code=4403)
         return
     
     player_id = None
     game = None
     
     try:
-        # Get or create player profile
-        player_profile = await player_registry.get_or_create_player(player_token)
+        # Player profile already verified above
+        player_profile = profile
         
         # Get game - either specified, player's current, or auto-join
         if game_id:

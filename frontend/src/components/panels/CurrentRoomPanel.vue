@@ -27,31 +27,41 @@ export default {
 
 <style scoped>
 .room-section h2 {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   color: #ffd700;
-  margin-bottom: 0.3rem;
-  padding-bottom: 0.25rem;
-  border-bottom: 1px solid #444;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+  font-weight: 700;
 }
 
 .current-room-info {
-  background: #1a1a2e;
+  background: rgba(0, 0, 0, 0.3);
   border-radius: 6px;
-  padding: 0.4rem;
-  border-left: 2px solid #ffd700;
+  padding: 0.6rem;
+  border-left: 3px solid #ffd700;
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.current-room-info:hover {
+  border-left-color: rgba(255, 215, 0, 0.8);
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
 }
 
 .current-room-name {
-  font-weight: bold;
+  font-weight: 700;
   color: #ffd700;
-  margin-bottom: 0.2rem;
-  font-size: 0.8rem;
+  margin-bottom: 0.4rem;
+  font-size: 0.85rem;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
 }
 
 .current-room-desc {
-  color: #bdc3c7;
-  font-size: 0.65rem;
-  line-height: 1.3;
+  color: #c5d0dc;
+  font-size: 0.7rem;
+  line-height: 1.5;
   font-style: italic;
 }
 </style>

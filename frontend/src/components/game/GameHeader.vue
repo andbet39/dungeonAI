@@ -44,13 +44,16 @@ export default {
 
 <style scoped>
 .header {
-  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-  padding: 0.5rem 1.5rem;
+  background: rgba(20, 25, 40, 0.8);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+  padding: 0.75rem 1.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 2px solid #444;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
+  position: relative;
+  z-index: 10;
 }
 
 .header-left {
@@ -60,25 +63,30 @@ export default {
 }
 
 .header h1 {
-  font-size: 1.3rem;
-  color: #ecf0f1;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  font-size: 1.4rem;
+  color: #ffd700;
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
 .back-btn {
-  background: rgba(255, 255, 255, 0.1);
-  color: #ecf0f1;
-  border: 1px solid #555;
-  padding: 0.4rem 0.8rem;
-  border-radius: 6px;
+  background: rgba(255, 215, 0, 0.1);
+  color: #ffd700;
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
   text-decoration: none;
-  font-size: 0.8rem;
-  transition: all 0.2s ease;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
 }
 
 .back-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: #3498db;
+  background: rgba(255, 215, 0, 0.2);
+  border-color: rgba(255, 215, 0, 0.5);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.2);
 }
 
 .header-right {
@@ -88,30 +96,36 @@ export default {
 }
 
 .world-position {
-  background: #1a1a1a;
-  padding: 0.3rem 0.6rem;
-  border-radius: 6px;
+  background: rgba(15, 18, 30, 0.8);
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
   font-family: monospace;
-  font-size: 0.75rem;
-  color: #3498db;
-  border: 1px solid #3498db;
+  font-size: 0.8rem;
+  color: #5dade2;
+  border: 1px solid rgba(52, 152, 219, 0.4);
+  backdrop-filter: blur(10px);
 }
 
 .connection-status {
-  padding: 0.3rem 0.6rem;
-  border-radius: 15px;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
   font-size: 0.75rem;
-  font-weight: bold;
+  font-weight: 700;
   transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
 }
 
 .connection-status.connected {
-  background: #27ae60;
+  background: rgba(39, 174, 96, 0.9);
   color: white;
+  border: 1px solid rgba(39, 174, 96, 0.5);
+  box-shadow: 0 0 15px rgba(39, 174, 96, 0.3);
 }
 
 .connection-status.disconnected {
-  background: #c0392b;
+  background: rgba(231, 76, 60, 0.9);
   color: white;
+  border: 1px solid rgba(231, 76, 60, 0.5);
+  box-shadow: 0 0 15px rgba(231, 76, 60, 0.3);
 }
 </style>

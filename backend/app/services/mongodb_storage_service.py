@@ -188,8 +188,10 @@ class MongoDBStorageService:
         """
         async with self._save_lock:
             try:
+                print(f"[MongoDBStorage] save_player_registry called with keys: {list(registry_data.keys())}")
                 players_data = registry_data.get("players", {})
                 stats_data = registry_data.get("stats", {})
+                print(f"[MongoDBStorage] Players: {len(players_data)}, Stats: {len(stats_data)}")
 
                 # Bulk upsert players
                 if players_data:
@@ -210,6 +212,10 @@ class MongoDBStorageService:
                 # Bulk upsert player stats
                 if stats_data:
                     from pymongo import UpdateOne
+
+                    # Debug: Show what we're saving
+                    for token, data in stats_data.items():
+                        print(f"[MongoDBStorage] Saving stats for {token[:8]}: {data.get('monsters_killed', 0)} kills, {data.get('damage_dealt', 0)} damage")
 
                     stat_ops = [
                         UpdateOne(

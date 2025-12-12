@@ -35,8 +35,8 @@ export const useSocketStore = defineStore('socket', () => {
     const eventLogStore = useEventLogStore()
 
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-    const playerToken = playerStore.getPlayerToken()
-    const wsUrl = `${protocol}//${window.location.host}/ws?game_id=${gameId}&player_token=${playerToken}`
+    // Cookies (access_token and player_token) are automatically sent with WebSocket connection
+    const wsUrl = `${protocol}//${window.location.host}/ws?game_id=${gameId}`
 
     socket = new WebSocket(wsUrl)
 

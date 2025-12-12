@@ -72,6 +72,17 @@ class MultiGameSettings:
 
 
 @dataclass
+class AuthSettings:
+    """Authentication and JWT configuration."""
+    jwt_secret_key: str = field(
+        default_factory=lambda: os.getenv("JWT_SECRET_KEY", "your-secret-key-change-in-production")
+    )
+    jwt_algorithm: str = "HS256"
+    jwt_expire_days: int = 30
+    max_profiles_per_user: int = 4
+
+
+@dataclass
 class MongoDBSettings:
     """MongoDB configuration."""
     connection_string: Optional[str] = field(
@@ -140,6 +151,7 @@ class Settings:
     storage: StorageSettings = field(default_factory=StorageSettings)
     multi_game: MultiGameSettings = field(default_factory=MultiGameSettings)
     mongodb: MongoDBSettings = field(default_factory=MongoDBSettings)
+    auth: AuthSettings = field(default_factory=AuthSettings)
 
     # Server settings
     host: str = "0.0.0.0"

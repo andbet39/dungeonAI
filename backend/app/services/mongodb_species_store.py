@@ -95,7 +95,7 @@ class MongoDBSpeciesKnowledgeStore:
 
                 if q_table_binary and q_table_shape[0] > 0:
                     q_table = np.frombuffer(q_table_binary, dtype=np.float32)
-                    q_table = q_table.reshape(q_table_shape)
+                    q_table = q_table.reshape(q_table_shape).copy()  # Create writable copy
                 else:
                     q_table = np.zeros(q_table_shape, dtype=np.float32)
 

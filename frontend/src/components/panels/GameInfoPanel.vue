@@ -59,28 +59,42 @@ export default {
 
 <style scoped>
 .info-section h2 {
-  font-size: 0.85rem;
-  color: #3498db;
-  margin-bottom: 0.3rem;
-  padding-bottom: 0.25rem;
-  border-bottom: 1px solid #444;
+  font-size: 0.9rem;
+  color: #ffd700;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+  font-weight: 700;
 }
 
 .info-item {
   display: flex;
   justify-content: space-between;
-  padding: 0.2rem 0;
-  border-bottom: 1px solid #333;
+  padding: 0.35rem 0.4rem;
+  border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.info-item:hover {
+  background: rgba(255, 215, 0, 0.05);
+}
+
+.info-item:last-child {
+  border-bottom: none;
 }
 
 .info-item .label {
-  color: #95a5a6;
+  color: #8e949e;
   font-size: 0.7rem;
+  font-weight: 600;
 }
 
 .info-item .value {
-  color: #ecf0f1;
-  font-weight: bold;
+  color: #ffd700;
+  font-weight: 700;
   font-size: 0.7rem;
+  text-shadow: 0 0 5px rgba(255, 215, 0, 0.2);
 }
 </style>

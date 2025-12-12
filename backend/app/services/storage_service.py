@@ -133,6 +133,13 @@ class StorageService:
     
     async def save_player_registry(self, registry_data: dict) -> bool:
         """Save player registry to disk."""
+        # Prevent writes if MongoDB is enabled (data should go to MongoDB instead)
+        from ..config import settings
+        from ..db import mongodb_manager
+        if settings.mongodb.is_enabled and mongodb_manager.is_connected:
+            print(f"[JSONStorage] ⚠ Skipping JSON write - MongoDB is active")
+            return True
+
         async with self._save_lock:
             try:
                 save_data = {
@@ -140,14 +147,14 @@ class StorageService:
                     "saved_at": datetime.now().isoformat(),
                     "registry": registry_data
                 }
-                
+
                 temp_file = self.players_file.with_suffix(".tmp")
-                
+
                 def write_file():
                     with open(temp_file, "w") as f:
                         json.dump(save_data, f, indent=2)
                     temp_file.rename(self.players_file)
-                
+
                 await asyncio.to_thread(write_file)
                 return True
                 
